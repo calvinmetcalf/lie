@@ -16,6 +16,7 @@
     "test": "promises-aplus-tests test/adapter"
   },
   "devDependencies": {
-    "promises-aplus-tests": "*"
+    "promises-aplus-tests": "*",
+    "uglify-js": "2.2.x"
   }
 }

@@ -1,4 +1,4 @@
-/** Copyright 2013 Ruben Verborgh - MIT license */
+/** @license MIT - ©2013 Ruben Verborgh */
 (function () {
   var func = "function",
       noop = function () {};
