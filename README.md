@@ -3,18 +3,25 @@ promiscuous is a JavaScript promise/deferred implementation, implementing the [P
 
 It strives to be **minimal** (< 1kb / 0.5kb gzipped) and **fast**.
 
-## Installation
-
+## Installation and usage
+### Node
+First, install promiscuous with npm.
 ```bash
 $ npm install promiscuous
 ```
 
-## Usage
-### Include the promiscuous script
+Then, include promiscuous in your code file.
 ```javascript
 var promiscuous = require('promiscuous');
 ```
 
+### Browsers
+Include promiscuous in your HTML file.
+```html
+<script src="promicuous-browser.js"></script>
+```
+
+## API
 ### Create a resolved promise
 ```javascript
 var one = promiscuous.resolve("one");
