@@ -1,7 +1,7 @@
 # promiscuous
 promiscuous is a JavaScript promise/deferred implementation, implementing the [Promises/A+ spec](http://promises-aplus.github.com/promises-spec/).
 
-It strives to be **minimal** (< 1kb [minified](https://raw.github.com/RubenVerborgh/promiscuous/dist/promiscuous-node.js) / 0.5kb gzipped) and **fast**.
+It strives to be **minimal** (0.8kb [minified](https://raw.github.com/RubenVerborgh/promiscuous/dist/promiscuous-node.js) / 0.45kb gzipped) and **fast**.
 
 ## Installation and usage
 ### Node
