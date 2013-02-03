@@ -16,12 +16,12 @@
       var pending = [];
       handler = function (onFulfilled, onRejected) {
         var d = createDeferred();
-        pending.push({ d: d, f: onFulfilled, r: onRejected });
+        pending.push({ d: d, resolve: onFulfilled, reject: onRejected });
         return d.promise;
       };
-      changeState = function (property, action, success, value) {
+      changeState = function (action, value, success) {
         for (var i = 0, l = pending.length; i < l; i++) {
-          var p = pending[i], deferred = p.d, callback = p[property];
+          var p = pending[i], deferred = p.d, callback = p[action];
           if (typeof callback !== func)
             deferred[action](value);
           else
@@ -33,8 +33,8 @@
     })();
 
     return {
-      resolve: function (value)  { changeState('f', 'resolve', true, value); },
-      reject : function (reason) { changeState('r', 'reject',  false, reason); },
+      resolve: function (value)  { changeState('resolve', value, true); },
+      reject : function (reason) { changeState('reject', reason, false); },
       promise: promise
     };
   }
