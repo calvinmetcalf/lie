@@ -3,7 +3,7 @@
   var func = "function",
       noop = function () {};
 
-  function deferred() {
+  function createDeferred() {
     var handler,
         changeState,
         promise = {
@@ -15,11 +15,11 @@
     (function () {
       var pending = [];
       handler = function (onFulfilled, onRejected) {
-        var d = deferred();
+        var d = createDeferred();
         pending.push({ d: d, f: onFulfilled, r: onRejected });
         return d.promise;
       };
-      changeState = function (property, action, newHandler, value) {
+      changeState = function (property, action, success, value) {
         for (var i = 0, l = pending.length; i < l; i++) {
           var p = pending[i], deferred = p.d, callback = p[property];
           if (typeof callback !== func)
@@ -27,34 +27,24 @@
           else
             execute(callback, value, deferred);
         }
-        handler = newHandler(promise, value);
+        handler = createHandler(promise, value, success);
         changeState = noop;
       };
     })();
 
     return {
-      resolve: function (value)  { changeState('f', 'resolve', fulfilledHandler, value); },
-      reject : function (reason) { changeState('r', 'reject',  rejectedHandler, reason); },
+      resolve: function (value)  { changeState('f', 'resolve', true, value); },
+      reject : function (reason) { changeState('r', 'reject',  false, reason); },
       promise: promise
     };
   }
 
-  function fulfilledHandler(promise, value) {
-    return function (onFulfilled) {
-      if (typeof onFulfilled !== func)
-        return promise;
-      var result = deferred();
-      process.nextTick(execute.bind(promise, onFulfilled, value, result));
-      return result.promise;
-    };
-  }
-
-  function rejectedHandler(promise, value) {
+  function createHandler(promise, value, success) {
     return function (onFulfilled, onRejected) {
-      if (typeof onRejected !== func)
+      var callback = success ? onFulfilled : onRejected, result;
+      if (typeof callback !== func)
         return promise;
-      var result = deferred();
-      process.nextTick(execute.bind(promise, onRejected, value, result));
+      process.nextTick(execute.bind(promise, callback, value, result = createDeferred()));
       return result.promise;
     };
   }
@@ -75,14 +65,14 @@
   module.exports = {
     resolve: function (value) {
       var promise = {};
-      promise.then = fulfilledHandler(promise, value);
+      promise.then = createHandler(promise, value, true);
       return promise;
     },
     reject: function (reason) {
       var promise = {};
-      promise.then = rejectedHandler(promise, reason);
+      promise.then = createHandler(promise, reason, false);
       return promise;
     },
-    deferred: deferred
+    deferred: createDeferred
   };
 })();
