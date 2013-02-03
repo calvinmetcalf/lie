@@ -5,7 +5,7 @@ module.exports = {
   pending: function () {
     var deferred = promiscuous.deferred();
     return {
-      promise: deferred.promise(),
+      promise: deferred.promise,
       fulfill: deferred.resolve,
       reject:  deferred.reject,
     };

@@ -17,7 +17,7 @@
       handler = function (onFulfilled, onRejected) {
         var d = deferred();
         pending.push({ d: d, f: onFulfilled, r: onRejected });
-        return d.promise();
+        return d.promise;
       };
       changeState = function (property, action, newHandler, value) {
         for (var i = 0, l = pending.length; i < l; i++) {
@@ -35,7 +35,7 @@
     return {
       resolve: function (value)  { changeState('f', 'resolve', fulfilledHandler, value); },
       reject : function (reason) { changeState('r', 'reject',  rejectedHandler, reason); },
-      promise: function () { return promise; }
+      promise: promise
     };
   }
 
@@ -45,7 +45,7 @@
         return promise;
       var result = deferred();
       process.nextTick(execute.bind(promise, onFulfilled, value, result));
-      return result.promise();
+      return result.promise;
     };
   }
 
@@ -55,7 +55,7 @@
         return promise;
       var result = deferred();
       process.nextTick(execute.bind(promise, onRejected, value, result));
-      return result.promise();
+      return result.promise;
     };
   }
 

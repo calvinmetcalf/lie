@@ -46,7 +46,7 @@ function promiseSomething(something) {
     else
       defer.reject("nothing");
   }, 1000);
-  return defer.promise();
+  return defer.promise;
 }
 promiseSomething("something").then(console.log, console.error);
 /* something */
