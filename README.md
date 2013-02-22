@@ -1,4 +1,9 @@
 # promiscuous
+<a href="http://promises-aplus.github.com/promises-spec">
+  <img src="http://promises-aplus.github.com/promises-spec/assets/logo-small.png"
+       alt="Promises/A+ logo" title="Promises/A+ 1.0 compliant" align="right" />
+</a>
+
 promiscuous is a JavaScript promise/deferred implementation, implementing the [Promises/A+ spec](http://promises-aplus.github.com/promises-spec/).
 
 It strives to be **minimal** (0.8kb [minified](https://raw.github.com/RubenVerborgh/promiscuous/dist/promiscuous-node.js) / 0.45kb gzipped) and **fast**.
