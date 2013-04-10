@@ -44,22 +44,24 @@
       var callback = success ? onFulfilled : onRejected, result;
       if (typeof callback !== func)
         return promise;
-      process.nextTick(execute.bind(promise, callback, value, result = createDeferred()));
+      execute(callback, value, result = createDeferred());
       return result.promise;
     };
   }
 
   function execute(callback, value, deferred) {
-    try {
-      var result = callback(value);
-      if (result && typeof result.then === func)
-        result.then(deferred.resolve, deferred.reject);
-      else
-        deferred.resolve(result);
-    }
-    catch (error) {
-      deferred.reject(error);
-    }
+    process.nextTick(function () {
+      try {
+        var result = callback(value);
+        if (result && typeof result.then === func)
+          result.then(deferred.resolve, deferred.reject);
+        else
+          deferred.resolve(result);
+      }
+      catch (error) {
+        deferred.reject(error);
+      }
+    });
   }
 
   module.exports = {
