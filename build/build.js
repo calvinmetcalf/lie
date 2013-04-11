@@ -2,9 +2,8 @@
 var fs = require("fs");
 var UglifyJS = require("uglify-js");
 
-var minified = UglifyJS.minify("promiscuous.js", {
-  output: { comments: true }
-}).code;
+var copyright = fs.readFileSync("promiscuous.js", "utf8").match(/.*\n/)[0];
+var minified = copyright + UglifyJS.minify("promiscuous.js").code;
 
 var path = "dist/";
 if(!fs.existsSync(path))
