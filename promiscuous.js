@@ -11,8 +11,9 @@
     // We use only one function to save memory and complexity.
     var handler = function (onFulfilled, onRejected, value) {
           // Case 1) handle a .then(onFulfilled, onRejected) call
+          var d;
           if (onFulfilled !== handler) {
-            var d = createDeferred();
+            d = createDeferred();
             handler.c.push({ d: d, resolve: onFulfilled, reject: onRejected });
             return d.promise;
           }
@@ -55,8 +56,9 @@
   function createHandler(promise, value, success) {
     return function (onFulfilled, onRejected) {
       var callback = success ? onFulfilled : onRejected, result;
-      if (typeof callback !== func)
+      if (typeof callback !== func) {
         return promise;
+      }
       execute(callback, value, result = createDeferred());
       return result.promise;
     };
@@ -66,12 +68,14 @@
   // resolving or rejecting the deferred
   function execute(callback, value, deferred) {
     tick(function () {
+      var result;
       try {
-        var result = callback(value);
-        if (result && typeof result.then === func)
+        result = callback(value);
+        if (result && typeof result.then === func) {
           result.then(deferred.resolve, deferred.reject);
-        else
+        } else {
           deferred.resolve(result);
+        }
       }
       catch (error) {
         deferred.reject(error);
@@ -99,7 +103,8 @@
   } else {
     module.exports=exports;
   }
-})((
-  ( typeof setImmediate !== "undefined" && setImmediate )    
-  || ( typeof process      !== "undefined" && process.nextTick )
-  || setTimeout));
+})(/*from github.com/JeanHuguesRobert/l8*/
+   typeof setImmediate !== "undefined" && setImmediate
+    || typeof process  !== "undefined" && process.nextTick
+    || setTimeout
+  );
