@@ -6,7 +6,7 @@
 
 promiscuous is a JavaScript promise/deferred implementation, implementing the [Promises/A+ spec](http://promises-aplus.github.com/promises-spec/).
 
-It strives to be **minimal** (0.8kb [minified](https://raw.github.com/RubenVerborgh/promiscuous/dist/promiscuous-node.js) / 0.45kb gzipped) and **fast**.
+It strives to be **minimal** (https://raw.github.com/RubenVerborgh/promiscuous/promiscuous.js) and **fast**.
 
 ## Installation and usage
 ### Node
@@ -21,7 +21,7 @@ var promiscuous = require('promiscuous');
 ```
 
 ### Browsers
-Include [promiscuous](https://raw.github.com/RubenVerborgh/promiscuous/dist/promiscuous-browser.js) in your HTML file.
+Include [promiscuous](https://raw.github.com/RubenVerborgh/promiscuous/dist/promiscuous.js) in your HTML file.
 ```html
 <script src="promicuous-browser.js"></script>
 ```
