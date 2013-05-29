@@ -1,7 +1,6 @@
 /** @license MIT - ©2013 Ruben Verborgh */
-(function () {
+(function (tick) {
   var func = "function";
-
   // Creates a deferred: an object with a promise and corresponding resolve/reject methods
   function createDeferred() {
     // The `handler` variable points to the function that will
@@ -22,14 +21,17 @@
           // (`onFulfilled` acts as a sentinel)
           // The actual function signature is
           // .re[ject|solve](sentinel, success, value)
-          var action = onRejected ? 'resolve' : 'reject';
+          var action = onRejected ? 'resolve' : 'reject',c,deferred,callback;
           for (var i = 0, l = handler.c.length; i < l; i++) {
-            var c = handler.c[i], deferred = c.d, callback = c[action];
-            if (typeof callback !== func)
+            c = handler.c[i];
+            deferred = c.d;
+            callback = c[action];
+            if (typeof callback !== func) {
               deferred[action](value);
-            else
+            } else {
               execute(callback, value, deferred);
-          };
+            }
+          }
           // Replace this handler with a simple resolved or rejected handler
           handler = createHandler(promise, value, onRejected);
         },
@@ -63,7 +65,7 @@
   // Executes the callback with the specified value,
   // resolving or rejecting the deferred
   function execute(callback, value, deferred) {
-    process.nextTick(function () {
+    tick(function () {
       try {
         var result = callback(value);
         if (result && typeof result.then === func)
@@ -76,8 +78,7 @@
       }
     });
   }
-
-  module.exports = {
+  var exports = {
     // Returns a resolved promise
     resolve: function (value) {
       var promise = {};
@@ -93,4 +94,12 @@
     // Returns a deferred
     deferred: createDeferred
   };
-})();
+  if(typeof module === 'undefined'){
+    window.promiscuous=exports;
+  } else {
+    module.exports=exports;
+  }
+})((
+  ( typeof setImmediate !== "undefined" && setImmediate )    
+  || ( typeof process      !== "undefined" && process.nextTick )
+  || setTimeout));
