@@ -12,5 +12,5 @@ fs.exists(path,function(exists){
    }
 });
 function makeIt(){
-spawn("./node_modules/uglify-js/bin/uglifyjs", ['promiscuous.js', '--comments', '-o', 'dist/promiscuous.js']);
+  spawn("./node_modules/uglify-js/bin/uglifyjs", ['promiscuous.js', '--comments', '-o', 'dist/promiscuous.js']);
 }
