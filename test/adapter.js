@@ -1,4 +1,4 @@
-var promiscuous = require('../promiscuous');
+var promiscuous = require('../dist/promiscuous.js');
 module.exports = {
   fullfilled: promiscuous.resolve,
   rejected:   promiscuous.reject,
