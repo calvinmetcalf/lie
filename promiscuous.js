@@ -1,4 +1,4 @@
-/** @license MIT - ©2013 Ruben Verborgh */
+/** @license  MIT - ©2013 Ruben Verborgh */
 (function (tick) {
   var func = "function";
   // Creates a deferred: an object with a promise and corresponding resolve/reject methods
@@ -98,7 +98,28 @@
     // Returns a deferred
     deferred: createDeferred
   };
-  if(typeof module === 'undefined'){
+  exports.all=function(array){
+  	var promise = exports.deferred();
+		var len = array.length;
+		var resolved=0;
+		var out = [];
+		var onSuccess=function(n){
+			return function(v){
+				out[n]=v;
+				resolved++;
+				if(resolved===len){
+					promise.resolve(out);
+				}
+			};
+		};
+		array.forEach(function(v,i){
+			v.then(onSuccess(i),function(a){
+				promise.reject(a);
+			});
+		});
+		return promise.promise;
+	};
+if(typeof module === "undefined" || !('exports' in module)){
     window.promiscuous=exports;
   } else {
     module.exports=exports;
