@@ -1,24 +1,24 @@
 {
-  "name": "promiscuous",
-  "version": "0.4.0",
+  "name": "lie",
+  "version": "0.5.0",
   "description": "A minimal and fast promise/deferred implementation",
-  "author": "Ruben Verborgh <ruben.verborgh@gmail.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/RubenVerborgh/promiscuous.git"
+    "url": "https://github.com/calvinmetcalf/lie.git"
   },
   "bugs": {
-    "url": "https://github.com/RubenVerborgh/promiscuous/issues"
+    "url": "https://github.com/calvinmetcalf/lie/issues"
   },
-  "main": "promiscuous.js",
+  "main": "dist/lie.js",
   "scripts": {
     "test": "promises-aplus-tests test/adapter"
   },
   "devDependencies": {
     "promises-aplus-tests": "*",
-    "uglify-js": "2.2.x",
     "grunt-contrib-concat": "~0.3.0",
-    "grunt": "~0.4.1"
+    "grunt": "~0.4.1",
+    "grunt-contrib-jshint": "~0.6.3",
+    "grunt-contrib-uglify": "~0.2.2"
   }
 }

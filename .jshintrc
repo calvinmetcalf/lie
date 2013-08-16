@@ -1,0 +1,18 @@
+{
+	"curly": true,
+	"eqeqeq": true,
+	"latedef": "nofunc",
+	"undef": true,
+	"unused": true,
+	"trailing":true,
+	"camelcase":true,
+	"globals": {
+		"process": true,
+		"exports": true,
+		"define": true,
+		"window": true,
+		"setTimeout":true,
+		"setImmediate":true,
+		"module":true
+	}
+}

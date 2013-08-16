@@ -1,9 +1,9 @@
-var promiscuous = require('../pro.js');
+var lie = require('../dist/lie.min.js');
 module.exports = {
-  fullfilled: promiscuous.resolve,
-  rejected:   promiscuous.reject,
+  fullfilled: lie.resolve,
+  rejected:   lie.reject,
   pending: function () {
-    var deferred = promiscuous.deferred();
+    var deferred = lie.deferred();
     return {
       promise: deferred.promise,
       fulfill: deferred.resolve,
