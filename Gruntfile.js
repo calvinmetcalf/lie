@@ -40,5 +40,5 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-uglify');
-	grunt.registerTask('default', ['concat:all','uglify','jshint']);
+	grunt.registerTask('default', ['concat:notall','uglify','jshint']);
 };
