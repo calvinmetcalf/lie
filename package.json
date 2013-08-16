@@ -17,6 +17,8 @@
   },
   "devDependencies": {
     "promises-aplus-tests": "*",
-    "uglify-js": "2.2.x"
+    "uglify-js": "2.2.x",
+    "grunt-contrib-concat": "~0.3.0",
+    "grunt": "~0.4.1"
   }
 }
