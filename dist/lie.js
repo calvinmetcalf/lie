@@ -1,4 +1,4 @@
-/*! lie 0.6.1 2013-08-17*/
+/*! lie 0.6.2 2013-08-17*/
 /*! (c)2013 Ruben Verborgh & Calvin Metcalf @license MIT https://github.com/calvinmetcalf/lie*/
 (function(){
 	var create = function(tick,exports) {
