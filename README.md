@@ -6,8 +6,10 @@
 
 lie is a JavaScript promise/deferred implementation, implementing the [Promises/A+ spec](http://promises-aplus.github.com/promises-spec/).
 
-A fork of [Ruben Verborgh's](https://github.com/RubenVerborgh) library called [promiscuous](https://github.com/RubenVerborgh/promiscuous).  
+A fork of [Ruben Verborgh's](https://github.com/RubenVerborgh) library called [promiscuous](https://github.com/RubenVerborgh/promiscuous).
 Which takes advantage of setImmediate if available, uses object cunstructors, and that I can actually consistently spell.
+
+To use grab a copy from the dist folder, we offer both production (minfied) and development (readable) builds as well as a version that bundles a very good [setImmediate shim](https://github.com/NobleJS/setImmediate) in with it (set Immediate === much much faster promises).
 
 ## API
 
