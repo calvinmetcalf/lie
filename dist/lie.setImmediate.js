@@ -217,7 +217,7 @@
     }
 }(typeof global === "object" && global ? global : this));
 
-/*! lie 0.6.0 2013-08-17*/
+/*! lie 0.6.1 2013-08-17*/
 /*! (c)2013 Ruben Verborgh & Calvin Metcalf @license MIT https://github.com/calvinmetcalf/lie*/
 (function(){
 	var create = function(tick,exports) {
@@ -348,7 +348,7 @@
 			return create(setImmediate,{});
 		});
 	}else if(typeof module === 'undefined' || !('exports' in module)){
-		create(typeof setImmediate === 'function'?setImmediate:setTimeout,window);
+		create(typeof setImmediate === 'function'?setImmediate:setTimeout,typeof global === 'object' && global ? global : this);
 	}else{
 		create(process.nextTick,exports);
 	}
