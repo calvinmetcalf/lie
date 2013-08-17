@@ -1,8 +1,8 @@
-/*! lie 0.5.0 2013-08-16*/
+/*! lie 0.5.1 2013-08-17*/
 /*! (c)2013 Ruben Verborgh & Calvin Metcalf @license MIT https://github.com/calvinmetcalf/lie*/
 (function(){
 	var create = function(tick,exports) {
-		var func = "function";
+		var func = 'function';
 		// Creates a deferred: an object with a promise and corresponding resolve/reject methods
 		function Deferred() {
 			// The `handler` variable points to the function that will

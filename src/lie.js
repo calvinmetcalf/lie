@@ -1,4 +1,4 @@
-		var func = "function";
+		var func = 'function';
 		// Creates a deferred: an object with a promise and corresponding resolve/reject methods
 		function Deferred() {
 			// The `handler` variable points to the function that will

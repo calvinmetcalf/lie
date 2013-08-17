@@ -6,6 +6,7 @@
 	"unused": true,
 	"trailing":true,
 	"camelcase":true,
+	"quotmark":"single",
 	"globals": {
 		"process": true,
 		"exports": true,
