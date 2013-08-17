@@ -6,7 +6,7 @@
 			return create(setImmediate,{});
 		});
 	}else if(typeof module === 'undefined' || !('exports' in module)){
-		create(typeof setImmediate === 'function'?setImmediate:setTimeout,window);
+		create(typeof setImmediate === 'function'?setImmediate:setTimeout,typeof global === 'object' && global ? global : this);
 	}else{
 		create(process.nextTick,exports);
 	}

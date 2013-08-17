@@ -47,7 +47,7 @@ module.exports = function(grunt) {
             options:{
                 jshintrc:"./.jshintrc"
             },
-            all:['./dist/<%= pkg.name %>.nobundle.js']
+            all:['./dist/<%= pkg.name %>.js']
         }
 	
 	
