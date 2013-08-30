@@ -102,15 +102,15 @@
 				}
 			});
 		}
-		exports.deferred = createDeferred;
+		exports = createDeferred;
 		// Returns a resolved promise
-		exports.deferred.resolve = function(value) {
+		exports.resolve = function(value) {
 			var promise = {};
 			promise.then = createHandler(promise, value, true);
 			return promise;
 		};
 		// Returns a rejected promise
-		exports.deferred.reject = function(reason) {
+		exports.reject = function(reason) {
 			var promise = {};
 			promise.then = createHandler(promise, reason, false);
 			return promise;
