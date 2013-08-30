@@ -30,14 +30,14 @@ function waitAwhile
 
 ### Create a resolved promise
 ```javascript
-var one = resolve("one");
+var one = deferred.resolve("one");
 one.then(console.log);
 /* one */
 ```
 
 ### Create a rejected promise
 ```javascript
-var none = reject("error");
+var none = deferred.reject("error");
 none.then(console.log, console.error);
 /* error */
 ```
@@ -66,11 +66,8 @@ function denodify(func) {
 install with `npm install lie`, exactly the same as above but 
 
 ```javascript
-var lie = require('lie');
-
-var deferred = lie.deferred;
-var resolve = lie.resolve;
-var reject = lie.reject;
+var deferred = require('lie');
+var resolve = deferred.resolve;
+var reject = deferred.reject;
 ```
 
-Or you could just use the lie prefix.
