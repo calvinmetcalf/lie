@@ -1,4 +1,4 @@
-var lie = require('../dist/lie.min.js');
-exports.fullfilled = lie.deferred.resolve;
-exports.rejected = lie.deferred.reject;
-exports.pending = lie.deferred;
+var deferred = require('../dist/lie.min');
+exports.fullfilled = deferred.resolve;
+exports.rejected = deferred.reject;
+exports.pending = deferred;
