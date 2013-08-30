@@ -1,5 +1,5 @@
 		exports.all = function(array) {
-			var promise = exports.deferred();
+			var promise = createDeferred();
 			var len = array.length;
 			var resolved = 0;
 			var out = [];
