@@ -102,17 +102,18 @@
 				}
 			});
 		}
+		exports.deferred = createDeferred;
 		// Returns a resolved promise
-		exports.resolve = function(value) {
+		exports.deferred.resolve = function(value) {
 			var promise = {};
 			promise.then = createHandler(promise, value, true);
 			return promise;
 		};
 		// Returns a rejected promise
-		exports.reject = function(reason) {
+		exports.deferred.reject = function(reason) {
 			var promise = {};
 			promise.then = createHandler(promise, reason, false);
 			return promise;
 		};
 		// Returns a deferred
-		exports.deferred = createDeferred;
+		
