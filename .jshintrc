@@ -14,6 +14,7 @@
 		"window": true,
 		"setTimeout":true,
 		"setImmediate":true,
-		"module":true
+		"module":true,
+		"global":true
 	}
 }
