@@ -1,4 +1,4 @@
-/*! lie 1.0.0 2013-08-30*/
+/*! lie 1.0.1 2013-08-31*/
 /*! (c)2013 Ruben Verborgh & Calvin Metcalf @license MIT https://github.com/calvinmetcalf/lie*/
 (function(){
 	var create = function(tick,exports) {
@@ -126,8 +126,8 @@
 	};
 
 	if(typeof define === 'function'){
-		define(['setImmediate'],function(setImmediate){
-			return create(setImmediate,{});
+		define(function(){
+			return create(typeof setImmediate === 'function'?setImmediate:setTimeout,{});
 		});
 	}else if(typeof module === 'undefined' || !('exports' in module)){
 		create(typeof setImmediate === 'function'?setImmediate:setTimeout,typeof global === 'object' && global ? global : this);
