@@ -1,6 +1,6 @@
 {
   "name": "lie",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "A minimal and fast promise/deferred implementation",
   "license": "MIT",
   "repository": {
@@ -14,16 +14,19 @@
   "scripts": {
     "test": "promises-aplus-tests test/adapter"
   },
-  "jam":{
-      "main":"dist/lie.setImmediate.js",
-      "include":["README.md","LICENSE.txt","dist/lie.setImmediate.js"]
+  "jam": {
+    "main": "dist/lie.js",
+    "include": [
+      "README.md",
+      "LICENSE.txt",
+      "dist/lie.js"
+    ]
   },
   "devDependencies": {
     "promises-aplus-tests": "*",
-    "grunt-contrib-concat": "~0.3.0",
     "grunt": "~0.4.1",
     "grunt-contrib-jshint": "~0.6.3",
     "grunt-contrib-uglify": "~0.2.2",
-    "setimmediate": "~1.0.1"
+    "grunt-component": "~0.1.6"
   }
 }
