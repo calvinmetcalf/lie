@@ -445,7 +445,7 @@ require.register("calvinmetcalf-setImmediate/lib/global.js", function(exports, r
 module.exports = typeof global === "object" && global ? global : this;
 });
 require.register("lie/lie.js", function(exports, require, module){
-var immediate = require('setImmediate');
+var immediate = require('./nextTick');
 var func = 'function';
 // Creates a deferred: an object with a promise and corresponding resolve/reject methods
 function Deferred() {
