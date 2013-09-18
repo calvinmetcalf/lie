@@ -12,6 +12,14 @@ module.exports = function(grunt) {
                     //"no-require":true,
                     standalone:'deferred'
                 }
+            }},
+            noConflict:{options: {
+                args: {
+                    out: 'dist',
+                    name: '<%= pkg.name %>.noConflict',
+                    //"no-require":true,
+                    standalone:'lie'
+                }
             }}
         },
         uglify: {
@@ -37,5 +45,5 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-component');
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-uglify');
-    grunt.registerTask('default', ['jshint','component','uglify']);
+    grunt.registerTask('default', ['jshint','component:build','component:noConflict','uglify']);
 };
