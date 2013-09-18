@@ -8,10 +8,8 @@
   "license": "MIT",
   "main": "lie.js",
   "scripts": [
-    "lie.js"
+    "lie.js",
+    "nextTick.js"
   ],
-  "remotes": [],
-  "dependencies": {
-    "calvinmetcalf/setImmediate": "2.0.2"
-  }
+  "remotes": []
 }
