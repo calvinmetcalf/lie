@@ -2,14 +2,16 @@
   "name": "lie",
   "repo": "calvinmetcalf/lie",
   "description": "A minimal and fast promise/deferred implementation",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "keywords": [],
   "development": {},
   "license": "MIT",
   "main": "lie.js",
   "scripts": [
-    "lie.js",
-    "nextTick.js"
+    "lie.js"
   ],
+  "dependencies":{
+      "calvinmetcalf/setImmediate":"2.1.0"
+  },
   "remotes": []
 }

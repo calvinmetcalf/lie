@@ -1,4 +1,4 @@
-var immediate = require('./nextTick');
+var immediate = require('setImmediate');
 var func = 'function';
 // Creates a deferred: an object with a promise and corresponding resolve/reject methods
 function Deferred() {
