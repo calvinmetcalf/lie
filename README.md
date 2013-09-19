@@ -7,7 +7,7 @@
 lie is a JavaScript promise/deferred implementation, implementing the [Promises/A+ spec](http://promises-aplus.github.com/promises-spec/).
 
 A fork of [Ruben Verborgh's](https://github.com/RubenVerborgh) library called [promiscuous](https://github.com/RubenVerborgh/promiscuous).
-Which takes advantage of my immediate library, uses object constructors, and with a name I can actually consistently spell. 
+Which takes advantage of my [immediate library](https://github.com/calvinmetcalf/setImmediate), uses object constructors, and with a name I can actually consistently spell. 
 Plus if I learned anything from [catiline](https://github.com/calvinmetcalf/catiline) (formally communist) it's that you don't want to pick an even mildly offensive name.
 
 ## API
