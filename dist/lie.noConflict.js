@@ -554,5 +554,5 @@ if (typeof exports == "object") {
 } else if (typeof define == "function" && define.amd) {
   define(function(){ return require("lie"); });
 } else {
-  this["deferred"] = require("lie");
+  this["lie"] = require("lie");
 }})();

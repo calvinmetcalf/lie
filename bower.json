@@ -1,6 +1,6 @@
 {
   "name": "lie",
-  "version": "1.0.3",
+  "version": "1.3.0",
   "main": "dist/lie.js",
   "ignore": [
     "**/.*",
