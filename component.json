@@ -11,7 +11,7 @@
     "lie.js"
   ],
   "dependencies":{
-      "calvinmetcalf/setImmediate":"2.3.1"
+      "calvinmetcalf/setImmediate":"2.4.0"
   },
   "remotes": []
 }
