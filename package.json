@@ -1,6 +1,6 @@
 {
   "name": "lie",
-  "version": "1.4.0",
+  "version": "2.0.0",
   "description": "A minimal and fast promise/deferred implementation",
   "license": "MIT",
   "repository": {
@@ -28,7 +28,9 @@
     "grunt": "~0.4.1",
     "grunt-contrib-jshint": "~0.6.3",
     "grunt-contrib-uglify": "~0.2.2",
-    "grunt-component": "~0.1.6",
-    "immediate": "~2.3.1"
+    "grunt-component": "~0.1.6"
+  },
+  "dependencies": {
+    "immediate": "~2.4.1"
   }
 }

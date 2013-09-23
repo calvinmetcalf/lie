@@ -1,9 +1,29 @@
-var deferred = require('../dist/lie.min');
+var promise = require('../dist/lie.min');
 var promisesAplusTests = require("promises-aplus-tests");
 var adapter = {};
-adapter.fullfilled = deferred.resolve;
-adapter.rejected = deferred.reject;
-adapter.pending = deferred;
+
+adapter.fulfilled = function(value) {
+  return promise(function(resolve, reject) {
+    resolve(value);
+  });
+};
+
+adapter.rejected = function(error) {
+  return new promise(function(resolve, reject) {
+    reject(error);
+  });
+};
+
+adapter.pending = function () {
+  var pending = {};
+
+  pending.promise = new promise(function(resolve, reject) {
+    pending.fulfill = resolve;
+    pending.reject = reject;
+  });
+
+  return pending;
+};
 promisesAplusTests(adapter, { reporter: "nyan" }, function (err) {
   if(err){
     console.log(err);

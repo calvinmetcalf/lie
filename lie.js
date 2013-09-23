@@ -11,7 +11,7 @@ function Promise(resolver) {
     // Before 2), `handler` holds a queue of callbacks.
     // After 2), `handler` is a simple .then handler.
     // We use only one function to save memory and complexity.
-    function handler(onFulfilled, onRejected, value) {
+    var handler = function(onFulfilled, onRejected, value) {
         // Case 1) handle a .then(onFulfilled, onRejected) call
         var createdDeffered;
         if (onFulfilled !== handler) {
@@ -42,33 +42,37 @@ function Promise(resolver) {
             }
         }
         // Replace this handler with a simple resolved or rejected handler
-        handler = createHandler(promise, value, onRejected);
+        handler = createHandler({then:then}, value, onRejected);
     };
-
-    
-    this.then = function(onFulfilled, onRejected) {
+    function then(onFulfilled, onRejected) {
         return handler(onFulfilled, onRejected);
-    };
+    }
     
-    var promise = new Promise();
-    this.promise = promise;
+    this.then = then;
     // The queue of deferreds
     handler.queue = [];
-
-    this.resolve = function resolve(value) {
-        if (handler.queue) {
-            handler(handler, true, value);
-        }
-    };
-
-    this.fulfill = this.resolve;
-
-    this.reject = function reject(reason) {
-        if (handler.queue) {
-            handler(handler, false, reason);
-        }
-    };
-    resolver(resolve,reject);
+    if(resolver){
+        resolver(function(value) {
+            if (handler.queue) {
+                handler(handler, true, value);
+            }
+        },function (reason) {
+            if (handler.queue) {
+                handler(handler, false, reason);
+            }
+        });
+    }else{
+        this.resolve = function(value) {
+            if (handler.queue) {
+                handler(handler, true, value);
+            }
+        };
+        this.reject = function (reason) {
+            if (handler.queue) {
+                handler(handler, false, reason);
+            }
+        };
+    }
 }
 
 
@@ -105,7 +109,7 @@ function execute(callback, value, deferred) {
         }
     });
 }
-// Returns a resolved promise
+/* Returns a resolved promise
 Promise.resolve = function(value) {
     var promise = {};
     promise.then = createHandler(promise, value, true);
@@ -140,4 +144,5 @@ Promise.all = function(array) {
 };
 // Returns a deferred
 Promise.immediate = immediate;
+*/
 module.exports = Promise;

@@ -397,7 +397,10 @@ require.register("lie/lie.js", function(exports, require, module){
 var immediate = require('immediate');
 var func = 'function';
 // Creates a deferred: an object with a promise and corresponding resolve/reject methods
-function Deferred() {
+function Promise(resolver) {
+     if (!(this instanceof Promise)) {
+        return new Promise(resolver);
+    }
     // The `handler` variable points to the function that will
     // 1) handle a .then(onFulfilled, onRejected) call
     // 2) handle a .resolve or .reject call (if not fulfilled)
@@ -408,13 +411,13 @@ function Deferred() {
         // Case 1) handle a .then(onFulfilled, onRejected) call
         var createdDeffered;
         if (onFulfilled !== handler) {
-            createdDeffered = createDeferred();
+            createdDeffered = Promise();
             handler.queue.push({
                 deferred: createdDeffered,
                 resolve: onFulfilled,
                 reject: onRejected
             });
-            return createdDeffered.promise;
+            return createdDeffered;
         }
 
         // Case 2) handle a .resolve or .reject call
@@ -435,37 +438,40 @@ function Deferred() {
             }
         }
         // Replace this handler with a simple resolved or rejected handler
-        handler = createHandler(promise, value, onRejected);
+        handler = createHandler({then:then}, value, onRejected);
     };
-
-    function Promise() {
-        this.then = function(onFulfilled, onRejected) {
-            return handler(onFulfilled, onRejected);
-        };
+    function then(onFulfilled, onRejected) {
+        return handler(onFulfilled, onRejected);
     }
-    var promise = new Promise();
-    this.promise = promise;
+    
+    this.then = then;
     // The queue of deferreds
     handler.queue = [];
-
-    this.resolve = function(value) {
-        if (handler.queue) {
-            handler(handler, true, value);
-        }
-    };
-
-    this.fulfill = this.resolve;
-
-    this.reject = function(reason) {
-        if (handler.queue) {
-            handler(handler, false, reason);
-        }
-    };
+    if(resolver){
+        resolver(function(value) {
+            if (handler.queue) {
+                handler(handler, true, value);
+            }
+        },function (reason) {
+            if (handler.queue) {
+                handler(handler, false, reason);
+            }
+        });
+    }else{
+        this.resolve = function(value) {
+            if (handler.queue) {
+                handler(handler, true, value);
+            }
+        };
+        this.reject = function (reason) {
+            if (handler.queue) {
+                handler(handler, false, reason);
+            }
+        };
+    }
 }
 
-function createDeferred() {
-    return new Deferred();
-}
+
 
 // Creates a fulfilled or rejected .then function
 function createHandler(promise, value, success) {
@@ -475,8 +481,8 @@ function createHandler(promise, value, success) {
         if (typeof callback !== func) {
             return promise;
         }
-        execute(callback, value, result = createDeferred());
-        return result.promise;
+        execute(callback, value, result = Promise());
+        return result;
     };
 }
 
@@ -499,42 +505,44 @@ function execute(callback, value, deferred) {
         }
     });
 }
-// Returns a resolved promise
-createDeferred.resolve = function(value) {
+/* Returns a resolved promise
+Promise.resolve = function(value) {
     var promise = {};
     promise.then = createHandler(promise, value, true);
     return promise;
 };
 // Returns a rejected promise
-createDeferred.reject = function(reason) {
+Promise.reject = function(reason) {
     var promise = {};
     promise.then = createHandler(promise, reason, false);
     return promise;
 };
-createDeferred.all = function(array) {
-    var promise = createDeferred();
-    var len = array.length;
-    var resolved = 0;
-    var out = [];
-    var onSuccess = function(n) {
-        return function(v) {
-            out[n] = v;
-            resolved++;
-            if (resolved === len) {
-                promise.resolve(out);
-            }
+Promise.all = function(array) {
+    return Promise(function(resolve,reject){
+        var len = array.length;
+        var resolved = 0;
+        var out = [];
+        var onSuccess = function(n) {
+            return function(v) {
+                out[n] = v;
+                resolved++;
+                if (resolved === len) {
+                    resolve(out);
+                }
+            };
         };
-    };
-    array.forEach(function(v, i) {
-        v.then(onSuccess(i), function(a) {
-            promise.reject(a);
+        array.forEach(function(v, i) {
+            v.then(onSuccess(i), function(a) {
+                reject(a);
+            });
         });
     });
-    return promise.promise;
 };
 // Returns a deferred
-createDeferred.immediate = immediate;
-module.exports = createDeferred;
+Promise.immediate = immediate;
+*/
+module.exports = Promise;
+
 });
 require.alias("calvinmetcalf-setImmediate/lib/index.js", "lie/deps/immediate/lib/index.js");
 require.alias("calvinmetcalf-setImmediate/lib/realSetImmediate.js", "lie/deps/immediate/lib/realSetImmediate.js");
