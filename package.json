@@ -13,7 +13,7 @@
   "main": "lie.js",
   "browser": "lie.js",
   "scripts": {
-    "test": "promises-aplus-tests test/adapter"
+    "test": "node test/adapter.js"
   },
   "jam": {
     "main": "dist/lie.js",

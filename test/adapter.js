@@ -1,4 +1,11 @@
 var deferred = require('../dist/lie.min');
-exports.fullfilled = deferred.resolve;
-exports.rejected = deferred.reject;
-exports.pending = deferred;
+var promisesAplusTests = require("promises-aplus-tests");
+var adapter = {};
+adapter.fullfilled = deferred.resolve;
+adapter.rejected = deferred.reject;
+adapter.pending = deferred;
+promisesAplusTests(adapter, { reporter: "nyan" }, function (err) {
+  if(err){
+    console.log(err);
+  }
+});
