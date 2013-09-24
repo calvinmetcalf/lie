@@ -94,40 +94,5 @@ function execute(callback, value, resolve, reject) {
         }
     });
 }
-/* Returns a resolved promise
-Promise.resolve = function(value) {
-    var promise = {};
-    promise.then = createHandler(promise, value, true);
-    return promise;
-};
-// Returns a rejected promise
-Promise.reject = function(reason) {
-    var promise = {};
-    promise.then = createHandler(promise, reason, false);
-    return promise;
-};
-Promise.all = function(array) {
-    return Promise(function(resolve,reject){
-        var len = array.length;
-        var resolved = 0;
-        var out = [];
-        var onSuccess = function(n) {
-            return function(v) {
-                out[n] = v;
-                resolved++;
-                if (resolved === len) {
-                    resolve(out);
-                }
-            };
-        };
-        array.forEach(function(v, i) {
-            v.then(onSuccess(i), function(a) {
-                reject(a);
-            });
-        });
-    });
-};
-// Returns a deferred
-Promise.immediate = immediate;
-*/
+
 module.exports = Promise;
