@@ -199,7 +199,6 @@ require.relative = function(parent) {
 require.register("calvinmetcalf-setImmediate/lib/index.js", function(exports, require, module){
 "use strict";
 var types = [
-    //require("./realSetImmediate"),
     require("./nextTick"),
     require("./mutation"),
     require("./postMessage"),
@@ -246,18 +245,6 @@ retFunc.clear = function (n) {
     return this;
 };
 module.exports = retFunc;
-
-});
-require.register("calvinmetcalf-setImmediate/lib/realSetImmediate.js", function(exports, require, module){
-"use strict";
-var globe = require("./global");
-exports.test = function () {
-    return  globe.setImmediate;
-};
-
-exports.install = function () {
-    return globe.setImmediate.bind(globe);
-};
 
 });
 require.register("calvinmetcalf-setImmediate/lib/nextTick.js", function(exports, require, module){
@@ -395,7 +382,6 @@ exports.install = function (handle) {
 });
 require.register("lie/lie.js", function(exports, require, module){
 var immediate = require('immediate');
-var func = 'function';
 // Creates a deferred: an object with a promise and corresponding resolve/reject methods
 function Promise(resolver) {
      if (!(this instanceof Promise)) {
@@ -409,36 +395,37 @@ function Promise(resolver) {
     // We use only one function to save memory and complexity.
     var handler = function(onFulfilled, onRejected, value) {
         // Case 1) handle a .then(onFulfilled, onRejected) call
-        var createdDeffered;
         if (onFulfilled !== handler) {
-            createdDeffered = Promise();
-            handler.queue.push({
-                deferred: createdDeffered,
-                resolve: onFulfilled,
-                reject: onRejected
+            return Promise(function(resolver,rejecter){
+                handler.queue.push({
+                    resolve: onFulfilled,
+                    reject: onRejected,
+                    resolver:resolver,
+                    rejecter:rejecter
+                });
             });
-            return createdDeffered;
         }
 
         // Case 2) handle a .resolve or .reject call
         // (`onFulfilled` acts as a sentinel)
         // The actual function signature is
         // .re[ject|solve](sentinel, success, value)
-        var action = onRejected ? 'resolve' : 'reject',
-            queue, deferred, callback;
+        var action = onRejected ? 'resolve' : 'reject';
+        var queue;
+        var callback;
         for (var i = 0, l = handler.queue.length; i < l; i++) {
             queue = handler.queue[i];
-            deferred = queue.deferred;
             callback = queue[action];
-            if (typeof callback !== func) {
-                deferred[action](value);
-            }
-            else {
-                execute(callback, value, deferred);
+            if (typeof callback === 'function') {
+                execute(callback, value, queue.resolver, queue.rejecter);
+            }else if(onRejected){
+                queue.resolver(value);
+            }else{
+                queue.rejecter(value);
             }
         }
         // Replace this handler with a simple resolved or rejected handler
-        handler = createHandler({then:then}, value, onRejected);
+        handler = createHandler(then, value, onRejected);
     };
     function then(onFulfilled, onRejected) {
         return handler(onFulfilled, onRejected);
@@ -447,61 +434,46 @@ function Promise(resolver) {
     this.then = then;
     // The queue of deferreds
     handler.queue = [];
-    if(resolver){
-        resolver(function(value) {
-            if (handler.queue) {
-                handler(handler, true, value);
-            }
-        },function (reason) {
-            if (handler.queue) {
-                handler(handler, false, reason);
-            }
-        });
-    }else{
-        this.resolve = function(value) {
-            if (handler.queue) {
-                handler(handler, true, value);
-            }
-        };
-        this.reject = function (reason) {
-            if (handler.queue) {
-                handler(handler, false, reason);
-            }
-        };
-    }
+    resolver(function(value) {
+        if (handler.queue) {
+            handler(handler, true, value);
+        }
+    },function (reason) {
+        if (handler.queue) {
+            handler(handler, false, reason);
+        }
+    });
 }
 
-
-
 // Creates a fulfilled or rejected .then function
-function createHandler(promise, value, success) {
+function createHandler(then, value, success) {
     return function(onFulfilled, onRejected) {
-        var callback = success ? onFulfilled : onRejected,
-            result;
-        if (typeof callback !== func) {
-            return promise;
+        var callback = success ? onFulfilled : onRejected;
+        if (typeof callback !== 'function') {
+            return {then:then};
         }
-        execute(callback, value, result = Promise());
-        return result;
+        return Promise(function(resolve,reject){
+            execute(callback, value, resolve, reject);
+       });
     };
 }
 
 // Executes the callback with the specified value,
 // resolving or rejecting the deferred
-function execute(callback, value, deferred) {
+function execute(callback, value, resolve, reject) {
     immediate(function() {
         var result;
         try {
             result = callback(value);
-            if (result && typeof result.then === func) {
-                result.then(deferred.resolve, deferred.reject);
+            if (result && typeof result.then === 'function') {
+                result.then(resolve, reject);
             }
             else {
-                deferred.resolve(result);
+                resolve(result);
             }
         }
         catch (error) {
-            deferred.reject(error);
+            reject(error);
         }
     });
 }
@@ -545,7 +517,6 @@ module.exports = Promise;
 
 });
 require.alias("calvinmetcalf-setImmediate/lib/index.js", "lie/deps/immediate/lib/index.js");
-require.alias("calvinmetcalf-setImmediate/lib/realSetImmediate.js", "lie/deps/immediate/lib/realSetImmediate.js");
 require.alias("calvinmetcalf-setImmediate/lib/nextTick.js", "lie/deps/immediate/lib/nextTick.js");
 require.alias("calvinmetcalf-setImmediate/lib/postMessage.js", "lie/deps/immediate/lib/postMessage.js");
 require.alias("calvinmetcalf-setImmediate/lib/messageChannel.js", "lie/deps/immediate/lib/messageChannel.js");
