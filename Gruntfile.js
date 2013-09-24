@@ -10,7 +10,7 @@ module.exports = function(grunt) {
                     out: 'dist',
                     name: '<%= pkg.name %>',
                     //"no-require":true,
-                    standalone:'deferred'
+                    standalone:'promise'
                 }
             }},
             noConflict:{options: {
@@ -27,7 +27,7 @@ module.exports = function(grunt) {
                 banner: banner,
                 report: 'gzip',
                 mangle: {
-                    except: ['Promise', 'Deferred']
+                    except: ['Promise']
                 }
             },
             all: {

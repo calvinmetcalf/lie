@@ -12,33 +12,21 @@ Plus if I learned anything from [catiline](https://github.com/calvinmetcalf/cati
 
 ## API
 
-by defailt adds a function called 'deferred' to the global scope (or if you grab the noConflict version than one called lie)
+by defailt adds a function called 'promise' to the global scope (or if you grab the noConflict version than one called lie)
 
 ### return a promise
 ```javascript
-function waitAwhile
-	var def = deferred();
-
-	setTimeout(function(){
-		def.resolve('DONE!');
-	},10000);//resolve it in 10 secons
-
-	return def.promise//return the promise
+function waitAwhile(){
+	return promise(function(resolve,reject){
+	    doSomething(functin(err,result){
+	        if(err){
+	            reject(err);
+	        }else{
+	            resolve(result);
+	        }
+	    });
+	});
 }
-```
-
-### Create a resolved promise
-```javascript
-var one = deferred.resolve("one");
-one.then(console.log);
-/* one */
-```
-
-### Create a rejected promise
-```javascript
-var none = deferred.reject("error");
-none.then(console.log, console.error);
-/* error */
 ```
 
 ### Write a function turns node style callback to promises
@@ -46,16 +34,16 @@ none.then(console.log, console.error);
 function denodify(func) {
   return function(){
     var args = Array.prototype.concat.apply([],arguments);
-    var def = deferred();
-    args.push(function(err,success){
-        if(err) {
-            def.reject(err);
-        } else {
-            def.resolve(success);
-        }
+    return promise(function(resolve,reject){
+        args.push(function(err,success){
+            if(err) {
+                reject(err);
+            } else {
+                resolve(success);
+            }
+        });
+        function.apply(undefined,args);
     });
-    function.apply(undefined,args);
-    return def.promise;
   }
 }
 ```
@@ -65,8 +53,6 @@ function denodify(func) {
 install with `npm install lie`, exactly the same as above but 
 
 ```javascript
-var deferred = require('lie');
-var resolve = deferred.resolve;
-var reject = deferred.reject;
+var promise = require('lie');
 ```
 
