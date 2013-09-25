@@ -2,18 +2,6 @@ var promise = require('../dist/lie.min');
 var promisesAplusTests = require("promises-aplus-tests");
 var adapter = {};
 //based off rsvp's adapter
-adapter.fulfilled = function(value) {
-  return promise(function(resolve, reject) {
-    resolve(value);
-  });
-};
-
-adapter.rejected = function(error) {
-  return new promise(function(resolve, reject) {
-    reject(error);
-  });
-};
-
 adapter.pending = function () {
   var pending = {};
 
