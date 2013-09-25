@@ -13,7 +13,7 @@
   "main": "lie.js",
   "browser": "lie.js",
   "scripts": {
-    "test": "node test/adapter.js"
+    "test": "grunt test"
   },
   "jam": {
     "main": "dist/lie.js",
