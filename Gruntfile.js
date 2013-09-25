@@ -28,7 +28,7 @@ module.exports = function(grunt) {
                 banner: banner,
                 report: 'gzip',
                 mangle: {
-                    except: ['Promise', 'Deferred']
+                    except: ['Promise']
                 }
             },
             all: {
