@@ -24,8 +24,6 @@ adapter.pending = function () {
 
   return pending;
 };
-promisesAplusTests(adapter, { reporter: "nyan" }, function (err) {
-  if(err){
-    console.log(err);
-  }
-});
+module.exports = function(callback){
+    promisesAplusTests(adapter, { reporter: "nyan" }, callback);
+};

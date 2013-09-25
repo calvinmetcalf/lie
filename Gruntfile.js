@@ -1,5 +1,6 @@
 var banner = '/*! <%= pkg.name %> <%= pkg.version %> <%= grunt.template.today("yyyy-mm-dd") %>*/\n/*! (c)2013 Ruben Verborgh & Calvin Metcalf @license MIT https://github.com/calvinmetcalf/lie*/';
 //"component build -o dist -n lie -s deferred"
+var test = require('./test/adapter');
 module.exports = function(grunt) {
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
@@ -10,7 +11,7 @@ module.exports = function(grunt) {
                     out: 'dist',
                     name: '<%= pkg.name %>',
                     //"no-require":true,
-                    standalone:'promise'
+                    standalone:'deferred'
                 }
             }},
             noConflict:{options: {
@@ -27,7 +28,7 @@ module.exports = function(grunt) {
                 banner: banner,
                 report: 'gzip',
                 mangle: {
-                    except: ['Promise']
+                    except: ['Promise', 'Deferred']
                 }
             },
             all: {
@@ -46,5 +47,14 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-component');
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-uglify');
-    grunt.registerTask('default', ['jshint','component:build','component:noConflict','uglify']);
+     grunt.registerTask('test',function(){
+         var done = this.async();
+         test(function(err){
+             if(err){
+                 grunt.log.error(err);
+             }
+             done();
+         });
+     });
+    grunt.registerTask('default', ['jshint','component:build','component:noConflict','uglify','test']);
 };
