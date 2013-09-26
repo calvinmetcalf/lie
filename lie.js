@@ -74,15 +74,22 @@ function createHandler(then, value, success) {
        });
     };
 }
-
+function isPromise(a){
+    return (a && typeof a.then === 'function');
+}
 // Executes the callback with the specified value,
 // resolving or rejecting the deferred
 function execute(callback, value, resolve, reject) {
+    if (isPromise(value)) {
+        return value.then(function(result){
+            execute(callback,result, resolve, reject);
+        },reject);
+    }
     immediate(function() {
         var result;
         try {
             result = callback(value);
-            if (result && typeof result.then === 'function') {
+            if (isPromise(result)) {
                 result.then(resolve, reject);
             }
             else {
