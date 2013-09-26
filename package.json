@@ -1,7 +1,7 @@
 {
   "name": "lie",
-  "version": "2.0.1",
-  "description": "A minimal and fast promise/deferred implementation",
+  "version": "2.0.2",
+  "description": "A minimal and fast promise implementation",
   "license": "MIT",
   "repository": {
     "type": "git",

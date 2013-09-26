@@ -1,8 +1,8 @@
 {
   "name": "lie",
   "repo": "calvinmetcalf/lie",
-  "description": "A minimal and fast promise/deferred implementation",
-  "version": "2.0.1",
+  "description": "A minimal and fast promise implementation",
+  "version": "2.0.2",
   "keywords": [],
   "development": {},
   "license": "MIT",
