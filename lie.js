@@ -12,15 +12,8 @@ function Promise(resolver) {
     // Before 2), `handler` holds a queue of callbacks.
     // After 2), `handler` is a simple .then handler.
     // We use only one function to save memory and complexity.
-    var handler = function(onFulfilled, onRejected, value) {
-        // Case 1) handle a .then(onFulfilled, onRejected) call
-        if (onFulfilled !== handler) {
-            return handleThen(onFulfilled, onRejected);
-        }
-        handleResolve(onRejected, value);
-    };
      // Case 1) handle a .then(onFulfilled, onRejected) call
-    function handleThen(onFulfilled, onRejected){
+    function pending(onFulfilled, onRejected){
         return Promise(function(resolver,rejecter){
             queue.push({
                 resolve: onFulfilled,
@@ -31,13 +24,13 @@ function Promise(resolver) {
         });
     }
     function then(onFulfilled, onRejected) {
-        return handler(onFulfilled, onRejected);
+        return resolved?resolved(onFulfilled, onRejected):pending(onFulfilled, onRejected);
     }
     // Case 2) handle a .resolve or .reject call
         // (`onFulfilled` acts as a sentinel)
         // The actual function signature is
         // .re[ject|solve](sentinel, success, value)
-    function handleResolve( success, value){
+    function resolve(success, value){
         var action = success ? 'resolve' : 'reject';
         var queued;
         var callback;
@@ -45,7 +38,7 @@ function Promise(resolver) {
             queued = queue[i];
             callback = queued[action];
             if (typeof callback === 'function') {
-                execute(callback, value, queued.resolver, queued.rejecter);
+                run(callback, value, queued.resolver, queued.rejecter);
             }else if(success){
                 queued.resolver(value);
             }else{
@@ -53,18 +46,17 @@ function Promise(resolver) {
             }
         }
         // Replace this handler with a simple resolved or rejected handler
-        handler = createHandler(then, value, success);
-        resolved = true;
+        resolved = createHandler(then, value, success);
     }
     this.then = then;
     function yes(value) {
         if (!resolved) {
-            handler( true, value);
+            resolve(true, value);
         }
     }
     function no (reason) {
         if (!resolved) {
-            handler( false, reason);
+            resolve(false, reason);
         }
     }
     try{
@@ -84,15 +76,17 @@ function createHandler(then, value, success) {
             });
         }
         return Promise(function(resolve,reject){
-            execute(callback, value, resolve, reject);
+            run(callback, value, resolve, reject);
        });
     };
 }
 
 // Executes the callback with the specified value,
 // resolving or rejecting the deferred
+function run(callback, value, resolve, reject) {
+    immediate(execute,callback,value,resolve,reject);
+}
 function execute(callback, value, resolve, reject) {
-    immediate(function() {
         try {
             var result = callback(value);
             if (result && typeof result.then === 'function') {
@@ -105,7 +99,5 @@ function execute(callback, value, resolve, reject) {
         catch (error) {
             reject(error);
         }
-    });
 }
-
 module.exports = Promise;
