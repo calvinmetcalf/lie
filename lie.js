@@ -60,7 +60,13 @@ function Promise(resolver) {
         }
     }
     try{
-        resolver(yes,no);
+        resolver(function(a){
+            if(a && typeof a.then==='function'){
+                a.then(yes,no);
+            }else{
+                yes(a);
+            }
+        },no);
     }catch(e){
         no(e);
     }
