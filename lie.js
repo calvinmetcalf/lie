@@ -38,7 +38,7 @@ function Promise(resolver) {
             queued = queue[i];
             callback = queued[action];
             if (typeof callback === 'function') {
-                run(callback, value, queued.resolver, queued.rejecter);
+                immediate(execute,callback, value, queued.resolver, queued.rejecter);
             }else if(success){
                 queued.resolver(value);
             }else{
@@ -82,16 +82,13 @@ function createHandler(then, value, success) {
             });
         }
         return Promise(function(resolve,reject){
-            run(callback, value, resolve, reject);
+            immediate(execute,callback,value,resolve,reject);
        });
     };
 }
 
 // Executes the callback with the specified value,
 // resolving or rejecting the deferred
-function run(callback, value, resolve, reject) {
-    immediate(execute,callback,value,resolve,reject);
-}
 function execute(callback, value, resolve, reject) {
         try {
             var result = callback(value);
