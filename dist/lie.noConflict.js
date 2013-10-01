@@ -199,6 +199,7 @@ require.relative = function(parent) {
 require.register("calvinmetcalf-setImmediate/lib/index.js", function(exports, require, module){
 "use strict";
 var types = [
+    //require("./realSetImmediate"),
     require("./nextTick"),
     require("./mutation"),
     require("./postMessage"),
@@ -245,6 +246,18 @@ retFunc.clear = function (n) {
     return this;
 };
 module.exports = retFunc;
+
+});
+require.register("calvinmetcalf-setImmediate/lib/realSetImmediate.js", function(exports, require, module){
+"use strict";
+var globe = require("./global");
+exports.test = function () {
+    return  globe.setImmediate;
+};
+
+exports.install = function () {
+    return globe.setImmediate.bind(globe);
+};
 
 });
 require.register("calvinmetcalf-setImmediate/lib/nextTick.js", function(exports, require, module){
@@ -490,6 +503,7 @@ module.exports = Promise;
 
 });
 require.alias("calvinmetcalf-setImmediate/lib/index.js", "lie/deps/immediate/lib/index.js");
+require.alias("calvinmetcalf-setImmediate/lib/realSetImmediate.js", "lie/deps/immediate/lib/realSetImmediate.js");
 require.alias("calvinmetcalf-setImmediate/lib/nextTick.js", "lie/deps/immediate/lib/nextTick.js");
 require.alias("calvinmetcalf-setImmediate/lib/postMessage.js", "lie/deps/immediate/lib/postMessage.js");
 require.alias("calvinmetcalf-setImmediate/lib/messageChannel.js", "lie/deps/immediate/lib/messageChannel.js");
