@@ -1,4 +1,4 @@
-var promise = require('../dist/lie.min');
+var promise = require('../lie');
 var promisesAplusTests = require("promises-aplus-tests");
 var adapter = {};
 //based off rsvp's adapter
