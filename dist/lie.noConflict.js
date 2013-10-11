@@ -400,7 +400,8 @@ function Promise(resolver) {
      if (!(this instanceof Promise)) {
         return new Promise(resolver);
     }
-    var queue = [];
+    var sucessQueue = [];
+    var failureQueue = [];
     var resolved = false;
     // The `handler` variable points to the function that will
     // 1) handle a .then(onFulfilled, onRejected) call
@@ -410,72 +411,80 @@ function Promise(resolver) {
     // We use only one function to save memory and complexity.
      // Case 1) handle a .then(onFulfilled, onRejected) call
     function pending(onFulfilled, onRejected){
-        return Promise(function(resolver,rejecter){
-            queue.push({
-                resolve: onFulfilled,
-                reject: onRejected,
-                resolver:resolver,
-                rejecter:rejecter
-            });
+        return Promise(function(success,failure){
+            if(typeof onFulfilled === 'function'){
+                sucessQueue.push({
+                    resolve: success,
+                    reject: failure,
+                    callback:onFulfilled
+                });
+            }else{
+                sucessQueue.push({
+                    next: success,
+                    callback:false
+                });
+            }
+            if(typeof onRejected === 'function'){
+                failureQueue.push({
+                    resolve: success,
+                    reject: failure,
+                    callback:onRejected
+                });
+            }else{
+                failureQueue.push({
+                    next: failure,
+                    callback:false
+                });
+            }
         });
     }
-    function then(onFulfilled, onRejected) {
+    this.then = function(onFulfilled, onRejected) {
         return resolved?resolved(onFulfilled, onRejected):pending(onFulfilled, onRejected);
-    }
+    };
     // Case 2) handle a .resolve or .reject call
         // (`onFulfilled` acts as a sentinel)
         // The actual function signature is
         // .re[ject|solve](sentinel, success, value)
     function resolve(success, value){
-        var action = success ? 'resolve' : 'reject';
-        var queued;
-        var callback;
-        for (var i = 0, l = queue.length; i < l; i++) {
-            queued = queue[i];
-            callback = queued[action];
-            if (typeof callback === 'function') {
-                immediate(execute,callback, value, queued.resolver, queued.rejecter);
-            }else if(success){
-                queued.resolver(value);
+        if(resolved){
+            return;
+        }
+        resolved = createHandler(this, value, success?0:1);
+        var queue = success ? sucessQueue : failureQueue;
+        var len = queue.length;
+        var i = -1;
+        while(++i < len) {
+            if (queue[i].callback) {
+                immediate(execute,queue[i].callback, value, queue[i].resolve, queue[i].reject);
+            }else if(!queue[i].next){
+                console.log(queue[i]);
             }else{
-                queued.rejecter(value);
+                queue[i].next(value);
             }
         }
         // Replace this handler with a simple resolved or rejected handler
-        resolved = createHandler(then, value, success);
     }
-    this.then = then;
-    function yes(value) {
-        if (!resolved) {
-            resolve(true, value);
-        }
-    }
-    function no (reason) {
-        if (!resolved) {
-            resolve(false, reason);
-        }
-    }
+    var fulfill = resolve.bind(this,true);
+    var reject = resolve.bind(this,false);
     try{
         resolver(function(a){
             if(a && typeof a.then==='function'){
-                a.then(yes,no);
+                a.then(fulfill,reject);
             }else{
-                yes(a);
+                fulfill(a);
             }
-        },no);
+        },reject);
     }catch(e){
-        no(e);
+        reject(e);
     }
 }
 
 // Creates a fulfilled or rejected .then function
-function createHandler(then, value, success) {
-    return function(onFulfilled, onRejected) {
-        var callback = success ? onFulfilled : onRejected;
+function createHandler(scope, value, success) {
+    return function() {
+        var callback = arguments[success];
         if (typeof callback !== 'function') {
-            return Promise(function(resolve,reject){
-                then(resolve,reject);
-            });
+            return scope;
         }
         return Promise(function(resolve,reject){
             immediate(execute,callback,value,resolve,reject);
