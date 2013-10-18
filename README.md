@@ -33,21 +33,22 @@ function waitAwhile(){
 
 ### Write a function turns node style callback to promises
 ```javascript
-function denodify(func) {
-  return function(){
-    var args = Array.prototype.concat.apply([],arguments);
-    return promise(function(resolve,reject){
-        args.push(function(err,success){
-            if(err) {
-                reject(err);
-            } else {
-                resolve(success);
-            }
+function denodify(func){
+    return function() {
+        var args = Array.prototype.concat.apply([], arguments);
+        return promise(function(resolve, reject) {
+            args.push(function(err, success) {
+                if (err) {
+                    reject(err);
+                }
+                else {
+                    resolve(success);
+                }
+            });
+            func.apply(undefined, args);
         });
-        function.apply(undefined,args);
-    });
-  }
-}
+    };
+};
 ```
 
 ##node
