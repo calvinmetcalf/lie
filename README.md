@@ -6,7 +6,7 @@
 
 lie is a JavaScript promise/deferred implementation, implementing the [Promises/A+ spec](http://promises-aplus.github.com/promises-spec/), with the goal of implementing the spec as closely as possible and nothing else,
 this means created promises only have a then method and promises may only be created by passing a resolver function to the constructor.  Lie is not meant to compete with Q, When, or any of the other promise libraries
-that already exist, it is meant to be a library you could use to create a [Q](https://github.com/kriskowal/q) or [When](https://github.com/cujojs/when).
+that already exist, it is meant to be a library you could use to create a [Q](https://github.com/kriskowal/q) or [When](https://github.com/cujojs/when) style tool belt, which I did [over here](https://github.com/calvinmetcalf/liar).
 
 A fork of [Ruben Verborgh's](https://github.com/RubenVerborgh) library called [promiscuous](https://github.com/RubenVerborgh/promiscuous).
 Which takes advantage of my [immediate library](https://github.com/calvinmetcalf/setImmediate), uses object constructors, and with a name I can actually consistently spell. 
