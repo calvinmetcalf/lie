@@ -40,7 +40,7 @@ module.exports = function(grunt) {
             options: {
                 jshintrc: "./.jshintrc"
             },
-            all: ['./<%= pkg.name %>.js']
+            all: ['./lib/<%= pkg.name %>.js']
         }
 
     });

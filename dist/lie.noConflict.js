@@ -199,9 +199,9 @@ require.relative = function(parent) {
 require.register("calvinmetcalf-setImmediate/lib/index.js", function(exports, require, module){
 "use strict";
 var types = [
-    //require("./realSetImmediate"),
     require("./nextTick"),
     require("./mutation"),
+    require("./realSetImmediate"),
     require("./postMessage"),
     require("./messageChannel"),
     require("./stateChange"),
@@ -246,18 +246,6 @@ retFunc.clear = function (n) {
     return this;
 };
 module.exports = retFunc;
-
-});
-require.register("calvinmetcalf-setImmediate/lib/realSetImmediate.js", function(exports, require, module){
-"use strict";
-var globe = require("./global");
-exports.test = function () {
-    return  globe.setImmediate;
-};
-
-exports.install = function () {
-    return globe.setImmediate.bind(globe);
-};
 
 });
 require.register("calvinmetcalf-setImmediate/lib/nextTick.js", function(exports, require, module){
@@ -393,7 +381,20 @@ exports.install = function (handle) {
     };
 };
 });
-require.register("lie/lie.js", function(exports, require, module){
+require.register("calvinmetcalf-setImmediate/lib/realSetImmediate.js", function(exports, require, module){
+"use strict";
+var globe = require("./global");
+exports.test = function () {
+    return  globe.setImmediate;
+};
+
+exports.install = function (handle) {
+    //return globe.setImmediate.bind(globe, handle);
+    return globe.setTimeout.bind(globe,handle,0);
+};
+
+});
+require.register("lie/lib/lie.js", function(exports, require, module){
 var immediate = require('immediate');
 // Creates a deferred: an object with a promise and corresponding resolve/reject methods
 function Promise(resolver) {
@@ -456,9 +457,7 @@ function Promise(resolver) {
         while(++i < len) {
             if (queue[i].callback) {
                 immediate(execute,queue[i].callback, value, queue[i].resolve, queue[i].reject);
-            }else if(!queue[i].next){
-                console.log(queue[i]);
-            }else{
+            }else if(queue[i].next){
                 queue[i].next(value);
             }
         }
@@ -512,7 +511,6 @@ module.exports = Promise;
 
 });
 require.alias("calvinmetcalf-setImmediate/lib/index.js", "lie/deps/immediate/lib/index.js");
-require.alias("calvinmetcalf-setImmediate/lib/realSetImmediate.js", "lie/deps/immediate/lib/realSetImmediate.js");
 require.alias("calvinmetcalf-setImmediate/lib/nextTick.js", "lie/deps/immediate/lib/nextTick.js");
 require.alias("calvinmetcalf-setImmediate/lib/postMessage.js", "lie/deps/immediate/lib/postMessage.js");
 require.alias("calvinmetcalf-setImmediate/lib/messageChannel.js", "lie/deps/immediate/lib/messageChannel.js");
@@ -520,11 +518,12 @@ require.alias("calvinmetcalf-setImmediate/lib/stateChange.js", "lie/deps/immedia
 require.alias("calvinmetcalf-setImmediate/lib/timeout.js", "lie/deps/immediate/lib/timeout.js");
 require.alias("calvinmetcalf-setImmediate/lib/global.js", "lie/deps/immediate/lib/global.js");
 require.alias("calvinmetcalf-setImmediate/lib/mutation.js", "lie/deps/immediate/lib/mutation.js");
+require.alias("calvinmetcalf-setImmediate/lib/realSetImmediate.js", "lie/deps/immediate/lib/realSetImmediate.js");
 require.alias("calvinmetcalf-setImmediate/lib/index.js", "lie/deps/immediate/index.js");
 require.alias("calvinmetcalf-setImmediate/lib/index.js", "immediate/index.js");
 require.alias("calvinmetcalf-setImmediate/lib/index.js", "calvinmetcalf-setImmediate/index.js");
 
-require.alias("lie/lie.js", "lie/index.js");
+require.alias("lie/lib/lie.js", "lie/index.js");
 
 if (typeof exports == "object") {
   module.exports = require("lie");

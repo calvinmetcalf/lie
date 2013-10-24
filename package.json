@@ -1,6 +1,6 @@
 {
   "name": "lie",
-  "version": "2.0.6",
+  "version": "2.0.7",
   "description": "A minimal and fast promise implementation",
   "license": "MIT",
   "repository": {
@@ -10,7 +10,12 @@
   "bugs": {
     "url": "https://github.com/calvinmetcalf/lie/issues"
   },
-  "main": "lie.js",
+  "keywords": [
+    "lie",
+    "promise",
+    "async"
+  ],
+  "main": "lib/lie.js",
   "scripts": {
     "test": "grunt test"
   },
