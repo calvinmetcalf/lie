@@ -4,24 +4,23 @@ var test = require('./test/adapter');
 module.exports = function(grunt) {
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
-        component: {
-            build:{
-            options: {
-                args: {
-                    out: 'dist',
-                    name: '<%= pkg.name %>',
-                    //"no-require":true,
-                    standalone:'promise'
+            browserify: {
+                build: {
+                    files: {
+                        'dist/<%= pkg.name %>.js': ["lib/lie.js"],
+                    },
+                    options: {
+                        standalone: 'promise'
+                    }
+                },
+                noConflict:{
+                    files: {
+                        'dist/<%= pkg.name %>.noConflict.js': ["lib/lie.js"],
+                    },
+                    options: {
+                        standalone: '<%= pkg.name %>'
+                    }
                 }
-            }},
-            noConflict:{options: {
-                args: {
-                    out: 'dist',
-                    name: '<%= pkg.name %>.noConflict',
-                    //"no-require":true,
-                    standalone:'lie'
-                }
-            }}
         },
         uglify: {
             options: {
@@ -44,7 +43,7 @@ module.exports = function(grunt) {
         }
 
     });
-    grunt.loadNpmTasks('grunt-component');
+    grunt.loadNpmTasks('grunt-browserify');
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-uglify');
      grunt.registerTask('test',function(){
@@ -56,5 +55,5 @@ module.exports = function(grunt) {
              done();
          });
      });
-    grunt.registerTask('default', ['jshint','component:build','component:noConflict','uglify','test']);
+    grunt.registerTask('default', ['jshint','browserify:build','browserify:noConflict','uglify','test']);
 };
