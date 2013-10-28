@@ -61,7 +61,7 @@ We start by creating two queues, one for functions to call if our promise resolv
 
 ```javascript
 */
-    var sucessQueue = [];
+    var successQueue = [];
     var failureQueue = [];
     var resolved = false;
 /*
@@ -105,13 +105,13 @@ if it is not called with an `onFulfilled` function the callback is set to false 
 ```javascript
 */
             if(typeof onFulfilled === 'function'){
-                sucessQueue.push({
+                successQueue.push({
                     resolve: success,
                     reject: failure,
                     callback:onFulfilled
                 });
             }else{
-                sucessQueue.push({
+                successQueue.push({
                     next: success,
                     callback:false
                 });
@@ -184,7 +184,7 @@ Now we define the variable queue to be either successQueue or failureQueue depen
 
 ```javascript
 */
-        var queue = success ? sucessQueue : failureQueue;
+        var queue = success ? successQueue : failureQueue;
         var len = queue.length;
         var i = -1;
         while(++i < len) {
