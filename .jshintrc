@@ -7,8 +7,6 @@
 	"trailing":true,
 	"camelcase":true,
 	"quotmark":"single",
-	"globals": {
-		"module":true,
-		"require":true
-	}
+	"globalstrict":true,
+	"node":true
 }

@@ -23,14 +23,14 @@ module.exports = function(grunt) {
                 }
         },
         uglify: {
-            options: {
+            all: {
+                 options: {
                 banner: banner,
                 report: 'gzip',
                 mangle: {
                     except: ['Promise']
                 }
             },
-            all: {
                 src: 'dist/<%= pkg.name %>.js',
                 dest: 'dist/<%= pkg.name %>.min.js'
             }
