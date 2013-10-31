@@ -2,3 +2,5 @@ node_modules
 .c9revisions
 *~
 components
+coverage
+docs
