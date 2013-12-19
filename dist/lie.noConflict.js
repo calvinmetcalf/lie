@@ -1,5 +1,4 @@
-!function(e){"object"==typeof exports?module.exports=e():"function"==typeof define&&define.amd?define(e):"undefined"!=typeof window?window.lie=e():"undefined"!=typeof global?global.lie=e():"undefined"!=typeof self&&(self.lie=e())}(function(){var define,module,exports;
-return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+!function(e){"object"==typeof exports?module.exports=e():"function"==typeof define&&define.amd?define(e):"undefined"!=typeof window?window.lie=e():"undefined"!=typeof global?global.lie=e():"undefined"!=typeof self&&(self.lie=e())}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 
 //#Promises
 
@@ -60,15 +59,19 @@ function Promise(resolver) {
 //Later on we will see that we redefine this variable to be a function.  In my head it is clearer to only use one variable for both the state and the function that is used when the state changes, others might not.
 
 
-    this.then = function(onFulfilled, onRejected) {
+    function then(onFulfilled, onRejected) {
         if(resolved){
             return resolved(onFulfilled, onRejected);
         } else {
             return pending(onFulfilled, onRejected);
         }
-    };
+    }
+    this.then = then;
 
-
+    function catchMethod(onRejected) {
+        return then(null, onRejected);
+    }
+    this['catch'] = catchMethod;
 //The pending function actually returns a new promise and you can see the syntax of how it's called with the nested function inside function.
 
     function pending(onFulfilled, onRejected){
