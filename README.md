@@ -14,7 +14,7 @@ Plus if I learned anything from [catiline](https://github.com/calvinmetcalf/cati
 
 ## API
 
-by defailt adds a function called 'promise' to the global scope (or if you grab the noConflict version than one called lie)
+by defailt adds a function called 'Promise' to the global scope (or if you grab the noConflict version than one called lie)
 
 ### return a promise
 ```javascript

@@ -1,17 +1,32 @@
-!function(e){"object"==typeof exports?module.exports=e():"function"==typeof define&&define.amd?define(e):"undefined"!=typeof window?window.promise=e():"undefined"!=typeof global?global.promise=e():"undefined"!=typeof self&&(self.promise=e())}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+!function(e){"object"==typeof exports?module.exports=e():"function"==typeof define&&define.amd?define(e):"undefined"!=typeof window?window.Promise=e():"undefined"!=typeof global?global.Promise=e():"undefined"!=typeof self&&(self.Promise=e())}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 'use strict';
 
 var immediate = require('immediate');
-
+var isDefineProp = false;
+try {
+    Object.defineProperty({}, 'test', {value:true});
+    isDefineProp = true;
+}catch(e){}
+function defineNonEnum(obj, name, value){
+    if(isDefineProp){
+         Object.defineProperty(obj, name, {
+            value: value,
+            configurable: true,
+            writable: true
+        });
+    }else{
+        obj[name] = value;
+    }
+}
 function Promise(resolver) {
 
      if (!(this instanceof Promise)) {
         return new Promise(resolver);
     }
 
-    this.successQueue = [];
-    this.failureQueue = [];
-    this.resolved = false;
+    defineNonEnum(this, 'successQueue', []);
+    defineNonEnum(this, 'failureQueue', []);
+    defineNonEnum(this, 'resolved', false);
 
   
     if(typeof resolver === 'function'){
@@ -22,16 +37,15 @@ function Promise(resolver) {
         }
     }
 }
-Promise.prototype.reject = function(reason){
+defineNonEnum(Promise.prototype, 'reject', function(reason){
     this.resolve(false,reason);
-};
-Promise.prototype.fulfill = function fulfill(value){
+});
+defineNonEnum(Promise.prototype, 'fulfill', function(value){
     this.resolve(true,value);
-};
-
-Promise.prototype.fulfillUnwrap = function(value){
+});
+defineNonEnum(Promise.prototype, 'fulfillUnwrap', function(value){
     unwrap(this.fulfill.bind(this), this.reject.bind(this), value);
-};
+});
 Promise.prototype.then = function(onFulfilled, onRejected) {
     if(this.resolved){
         return this.resolved(onFulfilled, onRejected);
@@ -42,7 +56,7 @@ Promise.prototype.then = function(onFulfilled, onRejected) {
 Promise.prototype.catch = function(onRejected) {
     return this.then(null, onRejected);
 };
-Promise.prototype.pending = function pending(onFulfilled, onRejected){
+defineNonEnum(Promise.prototype, 'pending', function(onFulfilled, onRejected){
     var self = this;
     return new Promise(function(success,failure){
         if(typeof onFulfilled === 'function'){
@@ -71,8 +85,8 @@ Promise.prototype.pending = function pending(onFulfilled, onRejected){
             });
         }
     });
-};
-Promise.prototype.resolve = function (success, value){
+});
+defineNonEnum(Promise.prototype, 'resolve', function (success, value){
 
     if(this.resolved){
         return;
@@ -91,7 +105,8 @@ Promise.prototype.resolve = function (success, value){
             queue[i].next(value);
         }
     }
-};
+});
+
 function unwrap(fulfill, reject, value){
     if(value && typeof value.then==='function'){
         value.then(fulfill,reject);

@@ -10,7 +10,7 @@ module.exports = function(grunt) {
                         'dist/<%= pkg.name %>.js': ["lib/lie.js"],
                     },
                     options: {
-                        standalone: 'promise'
+                        standalone: 'Promise'
                     }
                 },
                 noConflict:{

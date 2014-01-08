@@ -2,16 +2,31 @@
 'use strict';
 
 var immediate = require('immediate');
-
+var isDefineProp = false;
+try {
+    Object.defineProperty({}, 'test', {value:true});
+    isDefineProp = true;
+}catch(e){}
+function defineNonEnum(obj, name, value){
+    if(isDefineProp){
+         Object.defineProperty(obj, name, {
+            value: value,
+            configurable: true,
+            writable: true
+        });
+    }else{
+        obj[name] = value;
+    }
+}
 function Promise(resolver) {
 
      if (!(this instanceof Promise)) {
         return new Promise(resolver);
     }
 
-    this.successQueue = [];
-    this.failureQueue = [];
-    this.resolved = false;
+    defineNonEnum(this, 'successQueue', []);
+    defineNonEnum(this, 'failureQueue', []);
+    defineNonEnum(this, 'resolved', false);
 
   
     if(typeof resolver === 'function'){
@@ -22,16 +37,15 @@ function Promise(resolver) {
         }
     }
 }
-Promise.prototype.reject = function(reason){
+defineNonEnum(Promise.prototype, 'reject', function(reason){
     this.resolve(false,reason);
-};
-Promise.prototype.fulfill = function fulfill(value){
+});
+defineNonEnum(Promise.prototype, 'fulfill', function(value){
     this.resolve(true,value);
-};
-
-Promise.prototype.fulfillUnwrap = function(value){
+});
+defineNonEnum(Promise.prototype, 'fulfillUnwrap', function(value){
     unwrap(this.fulfill.bind(this), this.reject.bind(this), value);
-};
+});
 Promise.prototype.then = function(onFulfilled, onRejected) {
     if(this.resolved){
         return this.resolved(onFulfilled, onRejected);
@@ -42,7 +56,7 @@ Promise.prototype.then = function(onFulfilled, onRejected) {
 Promise.prototype.catch = function(onRejected) {
     return this.then(null, onRejected);
 };
-Promise.prototype.pending = function pending(onFulfilled, onRejected){
+defineNonEnum(Promise.prototype, 'pending', function(onFulfilled, onRejected){
     var self = this;
     return new Promise(function(success,failure){
         if(typeof onFulfilled === 'function'){
@@ -71,8 +85,8 @@ Promise.prototype.pending = function pending(onFulfilled, onRejected){
             });
         }
     });
-};
-Promise.prototype.resolve = function (success, value){
+});
+defineNonEnum(Promise.prototype, 'resolve', function (success, value){
 
     if(this.resolved){
         return;
@@ -91,7 +105,8 @@ Promise.prototype.resolve = function (success, value){
             queue[i].next(value);
         }
     }
-};
+});
+
 function unwrap(fulfill, reject, value){
     if(value && typeof value.then==='function'){
         value.then(fulfill,reject);
