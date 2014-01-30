@@ -59,9 +59,13 @@ Promise.prototype.then = function(onFulfilled, onRejected) {
         return this.pending(onFulfilled, onRejected);
     }
 };
-Promise.prototype.catch = function(onRejected) {
-    return this.then(null, onRejected);
-};
+(function(){
+    try {
+        Promise.prototype.catch = function(onRejected) {
+            return this.then(null, onRejected);
+        };
+    } catch(e){}
+}());
 defineNonEnum(Promise.prototype, 'pending', function(onFulfilled, onRejected){
     var self = this;
     return new Promise(function(success,failure){
