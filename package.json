@@ -17,7 +17,11 @@
   ],
   "main": "lib/lie.js",
   "scripts": {
-    "test": "./node_modules/istanbul/lib/cli.js test ./node_modules/promises-aplus-tests/lib/cli.js ./test/cover.js"
+    "test": "jshint lib/*.js && istanbul test ./node_modules/promises-aplus-tests/lib/cli.js ./test/cover.js",
+    "build-js": "browserify -s Promise ./lib/lie.js > ./dist/lie.js",
+    "build-min": "uglifyjs ./dist/lie.js -mc > ./dist/lie.min.js",
+    "build-nc": "browserify -s Lie ./lib/lie.js > ./dist/lie.noconflict.js",
+    "build": "npm run build-js && npm run build-min && npm run build-nc"
   },
   "jam": {
     "main": "dist/lie.js",
@@ -28,13 +32,11 @@
     ]
   },
   "devDependencies": {
-    "grunt": "~0.4.1",
-    "grunt-contrib-jshint": "~0.6.3",
-    "grunt-contrib-uglify": "~0.2.2",
     "promises-aplus-tests": "~1.3.2",
-    "browserify": "~2.35.0",
-    "grunt-browserify": "~1.2.9",
-    "istanbul": "~0.1.44"
+    "uglify-js": "^2.4.13",
+    "jshint": "^2.4.4",
+    "browserify": "^3.32.1",
+    "istanbul": "^0.2.6"
   },
   "dependencies": {
     "immediate": "~2.6.1"
