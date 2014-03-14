@@ -56,7 +56,84 @@ describe('Lie', function () {
       done();
     });
   });
+  describe('resolve', function () {
+    it('should work with true', function (done) {
+      Promise.resolve(true).then(function (value) {
+        if (value === true) {
+          done();
+        } else {
+          done(true);
+        }
+      });
+    });
+    it('should work with false', function (done) {
+      Promise.resolve(false).then(function (value) {
+        if (value === false) {
+          done();
+        } else {
+          done(true);
+        }
+      });
+    });
+    it('should work with null', function (done) {
+      Promise.resolve(null).then(function (value) {
+        if (value === null) {
+          done();
+        } else {
+          done(true);
+        }
+      });
+    });
+    it('should work with undefined', function (done) {
+      Promise.resolve(undefined).then(function (value) {
+        if (value === undefined) {
+          done();
+        } else {
+          done(true);
+        }
+      });
+    });
+    it('should work with 0', function (done) {
+      Promise.resolve(0).then(function (value) {
+        value++;
+        return Promise.resolve(0);
+      }).then(function (value) {
+        if (value === 0) {
+          done();
+        } else {
+          done(true);
+        }
+      });
+    });
+    it('should work with 1', function (done) {
+      Promise.resolve(1).then(function (value) {
+        if (value === 1) {
+          done();
+        } else {
+          done(true);
+        }
+      });
+    });
+    it('should work with \'\'', function (done) {
+      Promise.resolve('').then(function (value) {
+        if (value === '') {
+          done();
+        } else {
+          done(true);
+        }
+      });
+    });
+    it('should work with \'something\'', function (done) {
+      Promise.resolve('something').then(function (value) {
+        if (value === 'something') {
+          done();
+        } else {
+          done(true);
+        }
+      });
+    });
+  });
   describe('Promises/A+ Tests', function () {
-      aplus.mocha(adapter);
+    aplus.mocha(adapter);
   });
 });
