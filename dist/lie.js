@@ -1,173 +1,300 @@
-!function(e){"object"==typeof exports?module.exports=e():"function"==typeof define&&define.amd?define(e):"undefined"!=typeof window?window.Promise=e():"undefined"!=typeof global?global.Promise=e():"undefined"!=typeof self&&(self.Promise=e())}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Promise=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 'use strict';
 
-var immediate = require('immediate');
-var isDefineProp = false;
-// prevents deoptimization
-(function(){
-    try {
-        Object.defineProperty({}, 'test', {value:true});
-        isDefineProp = true;
-    }catch(e){}
-}());
-function defineNonEnum(obj, name, value){
-    if(isDefineProp){
-         Object.defineProperty(obj, name, {
-            value: value,
-            configurable: true,
-            writable: true
-        });
-    }else{
-        obj[name] = value;
-    }
-}
-function Promise(resolver) {
+module.exports = INTERNAL;
 
-     if (!(this instanceof Promise)) {
-        return new Promise(resolver);
-    }
+function INTERNAL() {}
+},{}],2:[function(_dereq_,module,exports){
+'use strict';
+var INTERNAL = _dereq_('./INTERNAL');
+var Promise = _dereq_('./promise');
+var reject = _dereq_('./reject');
+var resolve = _dereq_('./resolve');
 
-    defineNonEnum(this, 'successQueue', []);
-    defineNonEnum(this, 'failureQueue', []);
-    defineNonEnum(this, 'resolved', false);
-
-  
-    if(typeof resolver === 'function'){
-        this.resolvePassed(resolver);
-    }
-}
-defineNonEnum(Promise.prototype, 'resolvePassed', function(resolver){
-    try{
-        resolver(this.fulfillUnwrap.bind(this),this.reject.bind(this));
-    }catch(e){
-        this.reject(e);
-    }
-});
-defineNonEnum(Promise.prototype, 'reject', function(reason){
-    this.resolve(false,reason);
-});
-defineNonEnum(Promise.prototype, 'fulfill', function(value){
-    this.resolve(true,value);
-});
-defineNonEnum(Promise.prototype, 'fulfillUnwrap', function(value){
-    unwrap(this.fulfill.bind(this), this.reject.bind(this), value);
-});
-Promise.prototype.then = function(onFulfilled, onRejected) {
-    if(this.resolved){
-        return this.resolved(onFulfilled, onRejected);
-    } else {
-        return this.pending(onFulfilled, onRejected);
-    }
-};
-(function(){
-    try {
-        Promise.prototype['catch'] = function(onRejected) {
-            return this.then(null, onRejected);
-        };
-    } catch(e){}
-}());
-defineNonEnum(Promise.prototype, 'pending', function(onFulfilled, onRejected){
-    var self = this;
-    return new Promise(function(success,failure){
-        if(typeof onFulfilled === 'function'){
-            self.successQueue.push({
-                resolve: success,
-                reject: failure,
-                callback:onFulfilled
-            });
-        }else{
-            self.successQueue.push({
-                next: success,
-                callback:false
-            });
-        }
-
-        if(typeof onRejected === 'function'){
-            self.failureQueue.push({
-                resolve: success,
-                reject: failure,
-                callback:onRejected
-            });
-        }else{
-            self.failureQueue.push({
-                next: failure,
-                callback:false
-            });
-        }
+module.exports = function all(iterable) {
+  if (Object.prototype.toString.call(iterable) !== '[object Array]') {
+    return reject(new TypeError('must be an array'));
+  }
+  var len = iterable.length;
+  if (!len) {
+    return resolve([]);
+  }
+  var values = [];
+  var resolved = 0;
+  var i = -1;
+  var promise = new Promise(INTERNAL);
+  function allResolver(value, i) {
+    resolve(value).then(function (outValue) {
+      values[i] = outValue;
+      if (++resolved === len) {
+        promise.resolve(values);
+      }
+    }, function (error) {
+      promise.reject(error);
     });
-});
-defineNonEnum(Promise.prototype, 'resolve', function (success, value){
+  }
+  
+  while (++i < len) {
+    allResolver(iterable[i], i);
+  }
+  return promise;
+};
+},{"./INTERNAL":1,"./promise":6,"./reject":7,"./resolve":8}],3:[function(_dereq_,module,exports){
+'use strict';
 
-    if(this.resolved){
+module.exports = getThen;
+
+function getThen(obj) {
+  // Make sure we only access the accessor once as required by the spec
+  var then = obj && obj.then;
+  if (obj && typeof obj === 'object' && typeof then === 'function') {
+    return function appyThen() {
+      then.apply(obj, arguments);
+    };
+  }
+}
+},{}],4:[function(_dereq_,module,exports){
+module.exports = exports = _dereq_('./promise');
+
+exports.resolve = _dereq_('./resolve');
+exports.reject = _dereq_('./reject');
+exports.all = _dereq_('./all');
+},{"./all":2,"./promise":6,"./reject":7,"./resolve":8}],5:[function(_dereq_,module,exports){
+'use strict';
+
+module.exports = once;
+
+/* Wrap an arbitrary number of functions and allow only one of them to be
+   executed and only once */
+function once() {
+  var called = 0;
+  return function wrapper(wrappedFunction) {
+    return function () {
+      if (called++) {
         return;
-    }
-
-    this.resolved = createResolved(this, value, success?0:1);
-
-    var queue = success ? this.successQueue : this.failureQueue;
-    var len = queue.length;
-    var i = -1;
-    while(++i < len) {
-
-        if (queue[i].callback) {
-            immediate(execute,queue[i].callback, value, queue[i].resolve, queue[i].reject);
-        }else {
-            queue[i].next(value);
-        }
-    }
-});
-
-function unwrap(fulfill, reject, value){
-    if(value && typeof value.then==='function'){
-        value.then(fulfill,reject);
-    }else{
-        fulfill(value);
-    }
+      }
+      wrappedFunction.apply(this, arguments);
+    };
+  };
 }
+},{}],6:[function(_dereq_,module,exports){
+'use strict';
 
-function createResolved(scope, value, whichArg) {
-    function resolved() {
-        var callback = arguments[whichArg];
-        if (typeof callback !== 'function') {
-            return scope;
-        }else{
-            return new Promise(function(resolve,reject){
-                immediate(execute,callback,value,resolve,reject);
-            });
-        }
-    }
-    return resolved;
-}
+var unwrap = _dereq_('./unwrap');
+var INTERNAL = _dereq_('./INTERNAL');
+var once = _dereq_('./once');
+var tryCatch = _dereq_('./tryCatch');
+var getThen = _dereq_('./getThen');
 
-function execute(callback, value, resolve, reject) {
-    try {
-        unwrap(resolve,reject,callback(value));
-    } catch (error) {
-        reject(error);
-    }
-}
-
-
-
+// Lazy man's symbols for states
+var PENDING = ['PENDING'],
+  FULFILLED = ['FULFILLED'],
+  REJECTED = ['REJECTED'];
 module.exports = Promise;
+function Promise(resolver) {
+  if (!(this instanceof Promise)) {
+    return new Promise(resolver);
+  }
+  if (typeof resolver !== 'function') {
+    throw new TypeError('reslover must be a function');
+  }
+  this.state = PENDING;
+  this.queue = [];
+  if (resolver !== INTERNAL) {
+    safelyResolveThenable(this, resolver);
+  }
+}
+Promise.prototype.resolve = function (value) {
+  var result = tryCatch(getThen, value);
+  if (result.status === 'error') {
+    return this.reject(result.value);
+  }
+  var thenable = result.value;
 
-},{"immediate":4}],2:[function(require,module,exports){
+  if (thenable) {
+    safelyResolveThenable(this, thenable);
+  } else {
+    this.state = FULFILLED;
+    this.outcome = value;
+    var i = -1;
+    var len = this.queue.length;
+    while (++i < len) {
+      this.queue[i].callFulfilled(value);
+    }
+  }
+  return this;
+};
+Promise.prototype.reject = function (error) {
+  this.state = REJECTED;
+  this.outcome = error;
+  var i = -1;
+  var len = this.queue.length;
+  while (++i < len) {
+    this.queue[i].callRejected(error);
+  }
+  return this;
+};
+
+Promise.prototype['catch'] = function (onRejected) {
+  return this.then(null, onRejected);
+};
+Promise.prototype.then = function (onFulfilled, onRejected) {
+  var onFulfilledFunc = typeof onFulfilled === 'function';
+  var onRejectedFunc = typeof onRejected === 'function';
+  if (!onFulfilledFunc && this.state === FULFILLED || !onRejected && this.state === REJECTED) {
+    return this;
+  }
+  var promise = new Promise(INTERNAL);
+
+  var thenHandler =  {
+    promise: promise,
+  };
+  if (this.state !== REJECTED) {
+    if (onFulfilledFunc) {
+      thenHandler.callFulfilled = function (value) {
+        unwrap(promise, onFulfilled, value);
+      };
+    } else {
+      thenHandler.callFulfilled = function (value) {
+        promise.resolve(value);
+      };
+    }
+  }
+  if (this.state !== FULFILLED) {
+    if (onRejectedFunc) {
+      thenHandler.callRejected = function (value) {
+        unwrap(promise, onRejected, value);
+      };
+    } else {
+      thenHandler.callRejected = function (value) {
+        promise.reject(value);
+      };
+    }
+  }
+  if (this.state === FULFILLED) {
+    thenHandler.callFulfilled(this.outcome);
+  } else if (this.state === REJECTED) {
+    thenHandler.callRejected(this.outcome);
+  } else {
+    this.queue.push(thenHandler);
+  }
+
+  return promise;
+};
+function safelyResolveThenable(self, thenable) {
+  // Either fulfill, reject or reject with error
+  var onceWrapper = once();
+  var onError = onceWrapper(function (value) {
+    return self.reject(value);
+  });
+  var result = tryCatch(function () {
+    thenable(
+      onceWrapper(function (value) {
+        return self.resolve(value);
+      }),
+      onError
+    );
+  });
+  if (result.status === 'error') {
+    onError(result.value);
+  }
+}
+},{"./INTERNAL":1,"./getThen":3,"./once":5,"./tryCatch":9,"./unwrap":10}],7:[function(_dereq_,module,exports){
+'use strict';
+
+var Promise = _dereq_('./promise');
+var INTERNAL = _dereq_('./INTERNAL');
+
+module.exports = reject;
+
+function reject(reason) {
+	var promise = new Promise(INTERNAL);
+	return promise.reject(reason);
+}
+},{"./INTERNAL":1,"./promise":6}],8:[function(_dereq_,module,exports){
+'use strict';
+
+var Promise = _dereq_('./promise');
+var INTERNAL = _dereq_('./INTERNAL');
+
+module.exports = resolve;
+
+var FALSE = new Promise(INTERNAL).resolve(false);
+var NULL = new Promise(INTERNAL).resolve(null);
+var UNDEFINED = new Promise(INTERNAL).resolve(void 0);
+var ZERO = new Promise(INTERNAL).resolve(0);
+var EMPTYSTRING = new Promise(INTERNAL).resolve('');
+
+function resolve(value) {
+  if (value) {
+    return new Promise(INTERNAL).resolve(value);
+  }
+  var valueType = typeof value;
+  switch (valueType) {
+    case 'boolean':
+      return FALSE;
+    case 'undefined':
+      return UNDEFINED;
+    case 'object':
+      return NULL;
+    case 'number':
+      return ZERO;
+    case 'string':
+      return EMPTYSTRING;
+  }
+}
+},{"./INTERNAL":1,"./promise":6}],9:[function(_dereq_,module,exports){
+'use strict';
+
+module.exports = tryCatch;
+
+function tryCatch(func, value) {
+  var out = {};
+  try {
+    out.value = func(value);
+    out.status = 'success';
+  } catch (e) {
+    out.status = 'error';
+    out.value = e;
+  }
+  return out;
+}
+},{}],10:[function(_dereq_,module,exports){
+'use strict';
+
+var immediate = _dereq_('immediate');
+
+module.exports = unwrap;
+
+function unwrap(promise, func, value) {
+  immediate(function () {
+    var returnValue;
+    try {
+      returnValue = func(value);
+    } catch (e) {
+      return promise.reject(e);
+    }
+    if (returnValue === promise) {
+      promise.reject(new TypeError('Cannot resolve promise with itself'));
+    } else {
+      promise.resolve(returnValue);
+    }
+  });
+}
+},{"immediate":12}],11:[function(_dereq_,module,exports){
 "use strict";
 exports.test = function () {
     return false;
 };
-},{}],3:[function(require,module,exports){
-var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {};module.exports = typeof global === "object" && global ? global : this;
-},{}],4:[function(require,module,exports){
+},{}],12:[function(_dereq_,module,exports){
 "use strict";
 var types = [
-    require("./nextTick"),
-    require("./mutation"),
-    require("./realSetImmediate"),
-    require("./postMessage"),
-    require("./messageChannel"),
-    require("./stateChange"),
-    require("./timeout")
+    _dereq_("./nextTick"),
+    _dereq_("./mutation"),
+    _dereq_("./postMessage"),
+    _dereq_("./messageChannel"),
+    _dereq_("./stateChange"),
+    _dereq_("./timeout")
 ];
 var handlerQueue = [];
 function drainQueue() {
@@ -183,55 +310,60 @@ function drainQueue() {
 var nextTick;
 var i = -1;
 var len = types.length;
-while(++i<len){
-    if(types[i].test()){
+while (++ i < len) {
+    if (types[i].test()) {
         nextTick = types[i].install(drainQueue);
         break;
     }
 }
-var retFunc = function (task) {
-    var len, args;
+module.exports = function (task) {
+    var len, i, args;
     var nTask = task;
     if (arguments.length > 1 && typeof task === "function") {
-        args = Array.prototype.slice.call(arguments, 1);
-        nTask = function(){
-            task.apply(undefined,args);
+        args = new Array(arguments.length - 1);
+        i = 0;
+        while (++i < arguments.length) {
+            args[i - 1] = arguments[i];
         }
+        nTask = function () {
+            task.apply(undefined, args);
+        };
     }
     if ((len = handlerQueue.push(nTask)) === 1) {
         nextTick(drainQueue);
     }
     return len;
 };
-retFunc.clear = function (n) {
+module.exports.clear = function (n) {
     if (n <= handlerQueue.length) {
         handlerQueue[n - 1] = function () {};
     }
     return this;
 };
-module.exports = retFunc;
 
-},{"./messageChannel":5,"./mutation":6,"./nextTick":2,"./postMessage":7,"./realSetImmediate":8,"./stateChange":9,"./timeout":10}],5:[function(require,module,exports){
+},{"./messageChannel":13,"./mutation":14,"./nextTick":11,"./postMessage":15,"./stateChange":16,"./timeout":17}],13:[function(_dereq_,module,exports){
+(function (global){
 "use strict";
-var globe = require("./global");
+
 exports.test = function () {
-    return !!globe.MessageChannel;
+    return typeof global.MessageChannel !== "undefined";
 };
 
 exports.install = function (func) {
-    var channel = new globe.MessageChannel();
+    var channel = new global.MessageChannel();
     channel.port1.onmessage = func;
     return function () {
         channel.port2.postMessage(0);
     };
 };
-},{"./global":3}],6:[function(require,module,exports){
+}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],14:[function(_dereq_,module,exports){
+(function (global){
 "use strict";
 //based off rsvp
 //https://github.com/tildeio/rsvp.js/blob/master/lib/rsvp/async.js
-var globe = require("./global");
 
-var MutationObserver = globe.MutationObserver || globe.WebKitMutationObserver;
+var MutationObserver = global.MutationObserver || global.WebKitMutationObserver;
 
 exports.test = function () {
     return MutationObserver;
@@ -239,11 +371,11 @@ exports.test = function () {
 
 exports.install = function (handle) {
     var observer = new MutationObserver(handle);
-    var element = globe.document.createElement("div");
+    var element = global.document.createElement("div");
     observer.observe(element, { attributes: true });
 
     // Chrome Memory Leak: https://bugs.webkit.org/show_bug.cgi?id=93661
-    globe.addEventListener("unload", function () {
+    global.addEventListener("unload", function () {
         observer.disconnect();
         observer = null;
     }, false);
@@ -251,24 +383,25 @@ exports.install = function (handle) {
         element.setAttribute("drainQueue", "drainQueue");
     };
 };
-},{"./global":3}],7:[function(require,module,exports){
+}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],15:[function(_dereq_,module,exports){
+(function (global){
 "use strict";
-var globe = require("./global");
 exports.test = function () {
     // The test against `importScripts` prevents this implementation from being installed inside a web worker,
     // where `global.postMessage` means something completely different and can"t be used for this purpose.
 
-    if (!globe.postMessage || globe.importScripts) {
+    if (!global.postMessage || global.importScripts) {
         return false;
     }
 
     var postMessageIsAsynchronous = true;
-    var oldOnMessage = globe.onmessage;
-    globe.onmessage = function () {
+    var oldOnMessage = global.onmessage;
+    global.onmessage = function () {
         postMessageIsAsynchronous = false;
     };
-    globe.postMessage("", "*");
-    globe.onmessage = oldOnMessage;
+    global.postMessage("", "*");
+    global.onmessage = oldOnMessage;
 
     return postMessageIsAsynchronous;
 };
@@ -276,35 +409,26 @@ exports.test = function () {
 exports.install = function (func) {
     var codeWord = "com.calvinmetcalf.setImmediate" + Math.random();
     function globalMessage(event) {
-        if (event.source === globe && event.data === codeWord) {
+        if (event.source === global && event.data === codeWord) {
             func();
         }
     }
-    if (globe.addEventListener) {
-        globe.addEventListener("message", globalMessage, false);
+    if (global.addEventListener) {
+        global.addEventListener("message", globalMessage, false);
     } else {
-        globe.attachEvent("onmessage", globalMessage);
+        global.attachEvent("onmessage", globalMessage);
     }
     return function () {
-        globe.postMessage(codeWord, "*");
+        global.postMessage(codeWord, "*");
     };
 };
-},{"./global":3}],8:[function(require,module,exports){
+}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],16:[function(_dereq_,module,exports){
+(function (global){
 "use strict";
-var globe = require("./global");
-exports.test = function () {
-    return  globe.setImmediate;
-};
 
-exports.install = function (handle) {
-    return globe.setTimeout.bind(globe, handle, 0);
-};
-
-},{"./global":3}],9:[function(require,module,exports){
-"use strict";
-var globe = require("./global");
 exports.test = function () {
-    return "document" in globe && "onreadystatechange" in globe.document.createElement("script");
+    return "document" in global && "onreadystatechange" in global.document.createElement("script");
 };
 
 exports.install = function (handle) {
@@ -312,7 +436,7 @@ exports.install = function (handle) {
 
         // Create a <script> element; its readystatechange event will be fired asynchronously once it is inserted
         // into the document. Do so, thus queuing up the task. Remember to clean up once it's been called.
-        var scriptEl = globe.document.createElement("script");
+        var scriptEl = global.document.createElement("script");
         scriptEl.onreadystatechange = function () {
             handle();
 
@@ -320,12 +444,13 @@ exports.install = function (handle) {
             scriptEl.parentNode.removeChild(scriptEl);
             scriptEl = null;
         };
-        globe.document.documentElement.appendChild(scriptEl);
+        global.document.documentElement.appendChild(scriptEl);
 
         return handle;
     };
 };
-},{"./global":3}],10:[function(require,module,exports){
+}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],17:[function(_dereq_,module,exports){
 "use strict";
 exports.test = function () {
     return true;
@@ -336,7 +461,6 @@ exports.install = function (t) {
         setTimeout(t, 0);
     };
 };
-},{}]},{},[1])
-(1)
+},{}]},{},[4])
+(4)
 });
-;
