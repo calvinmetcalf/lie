@@ -15,13 +15,14 @@
     "promise",
     "async"
   ],
-  "main": "lib/lie.js",
+  "main": "lib/index.js",
   "scripts": {
-    "test": "jshint lib/*.js && istanbul test ./node_modules/promises-aplus-tests/lib/cli.js ./test/cover.js",
-    "build-js": "browserify -s Promise ./lib/lie.js > ./dist/lie.js",
+    "test": "jshint lib/*.js && mocha ./test/cover.js",
+    "build-js": "browserify -s Promise ./lib/index.js > ./dist/lie.js",
     "build-min": "uglifyjs ./dist/lie.js -mc > ./dist/lie.min.js",
-    "build-nc": "browserify -s Lie ./lib/lie.js > ./dist/lie.noconflict.js",
-    "build": "npm run build-js && npm run build-min && npm run build-nc"
+    "build-nc": "browserify -s Lie ./lib/index.js > ./dist/lie.noConflict.js",
+    "build": "npm run build-js && npm run build-min && npm run build-nc",
+    "cover": "istanbul cover ./node_modules/mocha/bin/_mocha ./test/cover.js -- -R nyan"
   },
   "jam": {
     "main": "dist/lie.js",
@@ -32,13 +33,14 @@
     ]
   },
   "devDependencies": {
-    "promises-aplus-tests": "~1.3.2",
     "uglify-js": "^2.4.13",
     "jshint": "^2.4.4",
     "browserify": "^3.32.1",
-    "istanbul": "^0.2.6"
+    "istanbul": "^0.2.6",
+    "promises-aplus-tests": "^2.0.4",
+    "mocha": "^1.18.0"
   },
   "dependencies": {
-    "immediate": "~2.6.1"
+    "immediate": "^2.6.3"
   }
 }
