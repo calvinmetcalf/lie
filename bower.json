@@ -1,17 +1,5 @@
 {
   "name": "lie",
-  "version": "2.5.4",
-  "main": "dist/lie.js",
-  "ignore": [
-    "**/.*",
-    "node_modules",
-    "components",
-    "bower_components",
-    "test",
-    "tests",
-    "website",
-    "*.md",
-    "*~",
-    "src"
-  ]
+  "version": "2.6.0",
+  "main": "dist/lie.js"
 }
