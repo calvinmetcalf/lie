@@ -20,7 +20,7 @@
     "test": "jshint lib/*.js && node ./test/adapter",
     "build-js": "browserify -s Promise ./lib/index.js > ./dist/lie.js",
     "build-min": "uglifyjs ./dist/lie.js -mc > ./dist/lie.min.js",
-    "build-nc": "browserify -s Lie ./lib/index.js > ./dist/lie.noconflict.js",
+    "build-nc": "browserify -s Lie ./lib/index.js > ./dist/lie.noConflict.js",
     "build": "npm run build-js && npm run build-min && npm run build-nc"
   },
   "jam": {
