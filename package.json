@@ -17,7 +17,7 @@
   ],
   "main": "lib/index.js",
   "scripts": {
-    "test": "jshint lib/*.js && mocha ./test/cover.js",
+    "test": "jshint lib/*.js && mocha -R nyan ./test/cover.js",
     "build-js": "browserify -s Promise ./lib/index.js > ./dist/lie.js",
     "build-min": "uglifyjs ./dist/lie.js -mc > ./dist/lie.min.js",
     "build-nc": "browserify -s Lie ./lib/index.js > ./dist/lie.noConflict.js",
@@ -41,6 +41,6 @@
     "mocha": "^1.18.0"
   },
   "dependencies": {
-    "immediate": "^2.6.3"
+    "immediate": "^2.7.0"
   }
 }
