@@ -23,7 +23,7 @@
     "build-nc": "browserify -s Lie ./lib/index.js > ./dist/lie.noConflict.js",
     "build": "npm run build-js && npm run build-min && npm run build-nc",
     "cover": "istanbul cover ./node_modules/mocha/bin/_mocha ./test/cover.js -- -R nyan",
-    "travis": "jshint lib/*.js && mocha -R spec ./test/cover.js",
+    "travis": "jshint lib/*.js && mocha -R spec ./test/cover.js"
   },
   "jam": {
     "main": "dist/lie.js",
