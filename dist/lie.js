@@ -10,7 +10,7 @@ var INTERNAL = _dereq_('./INTERNAL');
 var Promise = _dereq_('./promise');
 var reject = _dereq_('./reject');
 var resolve = _dereq_('./resolve');
-
+var handlers = _dereq_('./handlers');
 module.exports = function all(iterable) {
   if (Object.prototype.toString.call(iterable) !== '[object Array]') {
     return reject(new TypeError('must be an array'));
@@ -27,10 +27,10 @@ module.exports = function all(iterable) {
     resolve(value).then(function (outValue) {
       values[i] = outValue;
       if (++resolved === len) {
-        promise.resolve(values);
+        handlers.resolve(promise, values);
       }
     }, function (error) {
-      promise.reject(error);
+      handlers.reject(promise, error);
     });
   }
   
@@ -39,7 +39,7 @@ module.exports = function all(iterable) {
   }
   return promise;
 };
-},{"./INTERNAL":1,"./promise":6,"./reject":7,"./resolve":8}],3:[function(_dereq_,module,exports){
+},{"./INTERNAL":1,"./handlers":4,"./promise":7,"./reject":9,"./resolve":10}],3:[function(_dereq_,module,exports){
 'use strict';
 
 module.exports = getThen;
@@ -54,12 +54,49 @@ function getThen(obj) {
   }
 }
 },{}],4:[function(_dereq_,module,exports){
+'use strict';
+var tryCatch = _dereq_('./tryCatch');
+var getThen = _dereq_('./getThen');
+var resolveThenable = _dereq_('./resolveThenable');
+var states = _dereq_('./states');
+
+exports.resolve = function (self, value) {
+  var result = tryCatch(getThen, value);
+  if (result.status === 'error') {
+    return exports.reject(self, result.value);
+  }
+  var thenable = result.value;
+
+  if (thenable) {
+    resolveThenable.safely(self, thenable);
+  } else {
+    self.state = states.FULFILLED;
+    self.outcome = value;
+    var i = -1;
+    var len = self.queue.length;
+    while (++i < len) {
+      self.queue[i].callFulfilled(value);
+    }
+  }
+  return self;
+};
+exports.reject = function (self, error) {
+  self.state = states.REJECTED;
+  self.outcome = error;
+  var i = -1;
+  var len = self.queue.length;
+  while (++i < len) {
+    self.queue[i].callRejected(error);
+  }
+  return self;
+};
+},{"./getThen":3,"./resolveThenable":11,"./states":12,"./tryCatch":13}],5:[function(_dereq_,module,exports){
 module.exports = exports = _dereq_('./promise');
 
 exports.resolve = _dereq_('./resolve');
 exports.reject = _dereq_('./reject');
 exports.all = _dereq_('./all');
-},{"./all":2,"./promise":6,"./reject":7,"./resolve":8}],5:[function(_dereq_,module,exports){
+},{"./all":2,"./promise":7,"./reject":9,"./resolve":10}],6:[function(_dereq_,module,exports){
 'use strict';
 
 module.exports = once;
@@ -77,19 +114,15 @@ function once() {
     };
   };
 }
-},{}],6:[function(_dereq_,module,exports){
+},{}],7:[function(_dereq_,module,exports){
 'use strict';
 
 var unwrap = _dereq_('./unwrap');
 var INTERNAL = _dereq_('./INTERNAL');
-var once = _dereq_('./once');
-var tryCatch = _dereq_('./tryCatch');
-var getThen = _dereq_('./getThen');
+var resolveThenable = _dereq_('./resolveThenable');
+var states = _dereq_('./states');
+var QueueItem = _dereq_('./queueItem');
 
-// Lazy man's symbols for states
-var PENDING = ['PENDING'],
-  FULFILLED = ['FULFILLED'],
-  REJECTED = ['REJECTED'];
 module.exports = Promise;
 function Promise(resolver) {
   if (!(this instanceof Promise)) {
@@ -98,42 +131,12 @@ function Promise(resolver) {
   if (typeof resolver !== 'function') {
     throw new TypeError('reslover must be a function');
   }
-  this.state = PENDING;
+  this.state = states.PENDING;
   this.queue = [];
   if (resolver !== INTERNAL) {
-    safelyResolveThenable(this, resolver);
+    resolveThenable.safely(this, resolver);
   }
 }
-Promise.prototype.resolve = function (value) {
-  var result = tryCatch(getThen, value);
-  if (result.status === 'error') {
-    return this.reject(result.value);
-  }
-  var thenable = result.value;
-
-  if (thenable) {
-    safelyResolveThenable(this, thenable);
-  } else {
-    this.state = FULFILLED;
-    this.outcome = value;
-    var i = -1;
-    var len = this.queue.length;
-    while (++i < len) {
-      this.queue[i].callFulfilled(value);
-    }
-  }
-  return this;
-};
-Promise.prototype.reject = function (error) {
-  this.state = REJECTED;
-  this.outcome = error;
-  var i = -1;
-  var len = this.queue.length;
-  while (++i < len) {
-    this.queue[i].callRejected(error);
-  }
-  return this;
-};
 
 Promise.prototype['catch'] = function (onRejected) {
   return this.then(null, onRejected);
@@ -141,93 +144,81 @@ Promise.prototype['catch'] = function (onRejected) {
 Promise.prototype.then = function (onFulfilled, onRejected) {
   var onFulfilledFunc = typeof onFulfilled === 'function';
   var onRejectedFunc = typeof onRejected === 'function';
-  if (!onFulfilledFunc && this.state === FULFILLED || !onRejected && this.state === REJECTED) {
+  if (typeof onFulfilled !== 'function' && this.state === states.FULFILLED ||
+    typeof onRejected !== 'function' && this.state === states.REJECTED) {
     return this;
   }
   var promise = new Promise(INTERNAL);
 
-  var thenHandler =  {
-    promise: promise,
-  };
-  if (this.state !== REJECTED) {
-    if (onFulfilledFunc) {
-      thenHandler.callFulfilled = function (value) {
-        unwrap(promise, onFulfilled, value);
-      };
-    } else {
-      thenHandler.callFulfilled = function (value) {
-        promise.resolve(value);
-      };
-    }
-  }
-  if (this.state !== FULFILLED) {
-    if (onRejectedFunc) {
-      thenHandler.callRejected = function (value) {
-        unwrap(promise, onRejected, value);
-      };
-    } else {
-      thenHandler.callRejected = function (value) {
-        promise.reject(value);
-      };
-    }
-  }
-  if (this.state === FULFILLED) {
-    thenHandler.callFulfilled(this.outcome);
-  } else if (this.state === REJECTED) {
-    thenHandler.callRejected(this.outcome);
+  
+  if (this.state !== states.PENDING) {
+    var resolver = this.state === states.FULFILLED ? onFulfilled: onRejected;
+    unwrap(promise, resolver, this.outcome);
   } else {
-    this.queue.push(thenHandler);
+    this.queue.push(new QueueItem(promise, onFulfilled, onRejected));
   }
 
   return promise;
 };
-function safelyResolveThenable(self, thenable) {
-  // Either fulfill, reject or reject with error
-  var onceWrapper = once();
-  var onError = onceWrapper(function (value) {
-    return self.reject(value);
-  });
-  var result = tryCatch(function () {
-    thenable(
-      onceWrapper(function (value) {
-        return self.resolve(value);
-      }),
-      onError
-    );
-  });
-  if (result.status === 'error') {
-    onError(result.value);
+
+},{"./INTERNAL":1,"./queueItem":8,"./resolveThenable":11,"./states":12,"./unwrap":14}],8:[function(_dereq_,module,exports){
+'use strict';
+var handlers = _dereq_('./handlers');
+var unwrap = _dereq_('./unwrap');
+
+module.exports = QueueItem;
+function QueueItem(promise, onFulfilled, onRejected) {
+  this.promise = promise;
+  if (typeof onFulfilled === 'function') {
+    this.onFulfilled = onFulfilled;
+    this.callFulfilled = this.otherCallFulfilled;
+  }
+  if (typeof onRejected === 'function') {
+    this.onRejected = onRejected;
+    this.callRejected = this.otherCallRejected;
   }
 }
-},{"./INTERNAL":1,"./getThen":3,"./once":5,"./tryCatch":9,"./unwrap":10}],7:[function(_dereq_,module,exports){
+QueueItem.prototype.callFulfilled = function (value) {
+  handlers.resolve(this.promise, value);
+};
+QueueItem.prototype.otherCallFulfilled = function (value) {
+  unwrap(this.promise, this.onFulfilled, value);
+};
+QueueItem.prototype.callRejected = function (value) {
+  handlers.reject(this.promise, value);
+};
+QueueItem.prototype.otherCallRejected = function (value) {
+  unwrap(this.promise, this.onRejected, value);
+};
+},{"./handlers":4,"./unwrap":14}],9:[function(_dereq_,module,exports){
 'use strict';
 
 var Promise = _dereq_('./promise');
 var INTERNAL = _dereq_('./INTERNAL');
-
+var handlers = _dereq_('./handlers');
 module.exports = reject;
 
 function reject(reason) {
 	var promise = new Promise(INTERNAL);
-	return promise.reject(reason);
+	return handlers.reject(promise, reason);
 }
-},{"./INTERNAL":1,"./promise":6}],8:[function(_dereq_,module,exports){
+},{"./INTERNAL":1,"./handlers":4,"./promise":7}],10:[function(_dereq_,module,exports){
 'use strict';
 
 var Promise = _dereq_('./promise');
 var INTERNAL = _dereq_('./INTERNAL');
-
+var handlers = _dereq_('./handlers');
 module.exports = resolve;
 
-var FALSE = new Promise(INTERNAL).resolve(false);
-var NULL = new Promise(INTERNAL).resolve(null);
-var UNDEFINED = new Promise(INTERNAL).resolve(void 0);
-var ZERO = new Promise(INTERNAL).resolve(0);
-var EMPTYSTRING = new Promise(INTERNAL).resolve('');
+var FALSE = handlers.resolve(new Promise(INTERNAL), false);
+var NULL = handlers.resolve(new Promise(INTERNAL), null);
+var UNDEFINED = handlers.resolve(new Promise(INTERNAL), void 0);
+var ZERO = handlers.resolve(new Promise(INTERNAL), 0);
+var EMPTYSTRING = handlers.resolve(new Promise(INTERNAL), '');
 
 function resolve(value) {
   if (value) {
-    return new Promise(INTERNAL).resolve(value);
+    return handlers.resolve(new Promise(INTERNAL), value);
   }
   var valueType = typeof value;
   switch (valueType) {
@@ -243,7 +234,37 @@ function resolve(value) {
       return EMPTYSTRING;
   }
 }
-},{"./INTERNAL":1,"./promise":6}],9:[function(_dereq_,module,exports){
+},{"./INTERNAL":1,"./handlers":4,"./promise":7}],11:[function(_dereq_,module,exports){
+'use strict';
+var once = _dereq_('./once');
+var handlers = _dereq_('./handlers');
+var tryCatch = _dereq_('./tryCatch');
+function safelyResolveThenable(self, thenable) {
+  // Either fulfill, reject or reject with error
+  var onceWrapper = once();
+  var onError = onceWrapper(function (value) {
+    return handlers.reject(self, value);
+  });
+  var result = tryCatch(function () {
+    thenable(
+      onceWrapper(function (value) {
+        return handlers.resolve(self, value);
+      }),
+      onError
+    );
+  });
+  if (result.status === 'error') {
+    onError(result.value);
+  }
+}
+exports.safely = safelyResolveThenable;
+},{"./handlers":4,"./once":6,"./tryCatch":13}],12:[function(_dereq_,module,exports){
+// Lazy man's symbols for states
+
+exports.REJECTED = ['REJECTED'];
+exports.FULFILLED = ['FULFILLED'];
+exports.PENDING = ['PENDING'];
+},{}],13:[function(_dereq_,module,exports){
 'use strict';
 
 module.exports = tryCatch;
@@ -259,11 +280,11 @@ function tryCatch(func, value) {
   }
   return out;
 }
-},{}],10:[function(_dereq_,module,exports){
+},{}],14:[function(_dereq_,module,exports){
 'use strict';
 
 var immediate = _dereq_('immediate');
-
+var handlers = _dereq_('./handlers');
 module.exports = unwrap;
 
 function unwrap(promise, func, value) {
@@ -272,195 +293,198 @@ function unwrap(promise, func, value) {
     try {
       returnValue = func(value);
     } catch (e) {
-      return promise.reject(e);
+      return handlers.reject(promise, e);
     }
     if (returnValue === promise) {
-      promise.reject(new TypeError('Cannot resolve promise with itself'));
+      handlers.reject(promise, new TypeError('Cannot resolve promise with itself'));
     } else {
-      promise.resolve(returnValue);
+      handlers.resolve(promise, returnValue);
     }
   });
 }
-},{"immediate":12}],11:[function(_dereq_,module,exports){
-"use strict";
+},{"./handlers":4,"immediate":16}],15:[function(_dereq_,module,exports){
+'use strict';
 exports.test = function () {
-    return false;
+  return false;
 };
-},{}],12:[function(_dereq_,module,exports){
-"use strict";
+},{}],16:[function(_dereq_,module,exports){
+'use strict';
 var types = [
-    _dereq_("./nextTick"),
-    _dereq_("./mutation"),
-    _dereq_("./postMessage"),
-    _dereq_("./messageChannel"),
-    _dereq_("./stateChange"),
-    _dereq_("./timeout")
+  _dereq_('./nextTick'),
+  _dereq_('./mutation'),
+  _dereq_('./postMessage'),
+  _dereq_('./messageChannel'),
+  _dereq_('./stateChange'),
+  _dereq_('./timeout')
 ];
 var handlerQueue = [];
 function drainQueue() {
-    var i = 0,
-        task,
-        innerQueue = handlerQueue;
-	handlerQueue = [];
-	/*jslint boss: true */
-	while (task = innerQueue[i++]) {
-		task();
-	}
+  var task;
+  while ((task = handlerQueue.shift())) {
+    task();
+  }
 }
 var nextTick;
 var i = -1;
 var len = types.length;
 while (++ i < len) {
-    if (types[i].test()) {
-        nextTick = types[i].install(drainQueue);
-        break;
-    }
+  if (types[i].test()) {
+    nextTick = types[i].install(drainQueue);
+    break;
+  }
 }
 module.exports = function (task) {
-    var len, i, args;
-    var nTask = task;
-    if (arguments.length > 1 && typeof task === "function") {
-        args = new Array(arguments.length - 1);
-        i = 0;
-        while (++i < arguments.length) {
-            args[i - 1] = arguments[i];
-        }
-        nTask = function () {
-            task.apply(undefined, args);
-        };
+  var len, i, args;
+  var nTask = task;
+  if (arguments.length > 1 && typeof task === 'function') {
+    args = new Array(arguments.length - 1);
+    i = 0;
+    while (++i < arguments.length) {
+      args[i - 1] = arguments[i];
     }
-    if ((len = handlerQueue.push(nTask)) === 1) {
-        nextTick(drainQueue);
-    }
-    return len;
+    nTask = function () {
+      task.apply(undefined, args);
+    };
+  }
+  if ((len = handlerQueue.push(nTask)) === 1) {
+    nextTick(drainQueue);
+  }
+  return len;
 };
 module.exports.clear = function (n) {
-    if (n <= handlerQueue.length) {
-        handlerQueue[n - 1] = function () {};
-    }
-    return this;
+  if (n <= handlerQueue.length) {
+    handlerQueue[n - 1] = function () {};
+  }
+  return this;
 };
 
-},{"./messageChannel":13,"./mutation":14,"./nextTick":11,"./postMessage":15,"./stateChange":16,"./timeout":17}],13:[function(_dereq_,module,exports){
+},{"./messageChannel":17,"./mutation":18,"./nextTick":15,"./postMessage":19,"./stateChange":20,"./timeout":21}],17:[function(_dereq_,module,exports){
 (function (global){
-"use strict";
+'use strict';
 
 exports.test = function () {
-    return typeof global.MessageChannel !== "undefined";
+  if (global.setImmediate) {
+    // we can only get here in IE10
+    // which doesn't handel postMessage well
+    return false;
+  }
+  return typeof global.MessageChannel !== 'undefined';
 };
 
 exports.install = function (func) {
-    var channel = new global.MessageChannel();
-    channel.port1.onmessage = func;
-    return function () {
-        channel.port2.postMessage(0);
-    };
+  var channel = new global.MessageChannel();
+  channel.port1.onmessage = func;
+  return function () {
+    channel.port2.postMessage(0);
+  };
 };
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],14:[function(_dereq_,module,exports){
+},{}],18:[function(_dereq_,module,exports){
 (function (global){
-"use strict";
-//based off rsvp
-//https://github.com/tildeio/rsvp.js/blob/master/lib/rsvp/async.js
+'use strict';
+//based off rsvp https://github.com/tildeio/rsvp.js
+//license https://github.com/tildeio/rsvp.js/blob/master/LICENSE
+//https://github.com/tildeio/rsvp.js/blob/master/lib/rsvp/asap.js
 
-var MutationObserver = global.MutationObserver || global.WebKitMutationObserver;
+var Mutation = global.MutationObserver || global.WebKitMutationObserver;
 
 exports.test = function () {
-    return MutationObserver;
+  return Mutation;
 };
 
 exports.install = function (handle) {
-    var observer = new MutationObserver(handle);
-    var element = global.document.createElement("div");
-    observer.observe(element, { attributes: true });
-
-    // Chrome Memory Leak: https://bugs.webkit.org/show_bug.cgi?id=93661
-    global.addEventListener("unload", function () {
-        observer.disconnect();
-        observer = null;
-    }, false);
-    return function () {
-        element.setAttribute("drainQueue", "drainQueue");
-    };
+  var called = 0;
+  var observer = new Mutation(handle);
+  var element = global.document.createTextNode('');
+  observer.observe(element, {
+    characterData: true
+  });
+  return function () {
+    element.data = (called = ++called % 2);
+  };
 };
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],15:[function(_dereq_,module,exports){
+},{}],19:[function(_dereq_,module,exports){
 (function (global){
-"use strict";
+'use strict';
+// The test against `importScripts` prevents this implementation from being installed inside a web worker,
+// where `global.postMessage` means something completely different and can't be used for this purpose.
+
 exports.test = function () {
-    // The test against `importScripts` prevents this implementation from being installed inside a web worker,
-    // where `global.postMessage` means something completely different and can"t be used for this purpose.
+  if (!global.postMessage || global.importScripts) {
+    return false;
+  }
+  if (global.setImmediate) {
+    // we can only get here in IE10
+    // which doesn't handel postMessage well
+    return false;
+  }
+  var postMessageIsAsynchronous = true;
+  var oldOnMessage = global.onmessage;
+  global.onmessage = function () {
+    postMessageIsAsynchronous = false;
+  };
+  global.postMessage('', '*');
+  global.onmessage = oldOnMessage;
 
-    if (!global.postMessage || global.importScripts) {
-        return false;
-    }
-
-    var postMessageIsAsynchronous = true;
-    var oldOnMessage = global.onmessage;
-    global.onmessage = function () {
-        postMessageIsAsynchronous = false;
-    };
-    global.postMessage("", "*");
-    global.onmessage = oldOnMessage;
-
-    return postMessageIsAsynchronous;
+  return postMessageIsAsynchronous;
 };
 
 exports.install = function (func) {
-    var codeWord = "com.calvinmetcalf.setImmediate" + Math.random();
-    function globalMessage(event) {
-        if (event.source === global && event.data === codeWord) {
-            func();
-        }
+  var codeWord = 'com.calvinmetcalf.setImmediate' + Math.random();
+  function globalMessage(event) {
+    if (event.source === global && event.data === codeWord) {
+      func();
     }
-    if (global.addEventListener) {
-        global.addEventListener("message", globalMessage, false);
-    } else {
-        global.attachEvent("onmessage", globalMessage);
-    }
-    return function () {
-        global.postMessage(codeWord, "*");
-    };
+  }
+  if (global.addEventListener) {
+    global.addEventListener('message', globalMessage, false);
+  } else {
+    global.attachEvent('onmessage', globalMessage);
+  }
+  return function () {
+    global.postMessage(codeWord, '*');
+  };
 };
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],16:[function(_dereq_,module,exports){
+},{}],20:[function(_dereq_,module,exports){
 (function (global){
-"use strict";
+'use strict';
 
 exports.test = function () {
-    return "document" in global && "onreadystatechange" in global.document.createElement("script");
+  return 'document' in global && 'onreadystatechange' in global.document.createElement('script');
 };
 
 exports.install = function (handle) {
-    return function () {
+  return function () {
 
-        // Create a <script> element; its readystatechange event will be fired asynchronously once it is inserted
-        // into the document. Do so, thus queuing up the task. Remember to clean up once it's been called.
-        var scriptEl = global.document.createElement("script");
-        scriptEl.onreadystatechange = function () {
-            handle();
+    // Create a <script> element; its readystatechange event will be fired asynchronously once it is inserted
+    // into the document. Do so, thus queuing up the task. Remember to clean up once it's been called.
+    var scriptEl = global.document.createElement('script');
+    scriptEl.onreadystatechange = function () {
+      handle();
 
-            scriptEl.onreadystatechange = null;
-            scriptEl.parentNode.removeChild(scriptEl);
-            scriptEl = null;
-        };
-        global.document.documentElement.appendChild(scriptEl);
-
-        return handle;
+      scriptEl.onreadystatechange = null;
+      scriptEl.parentNode.removeChild(scriptEl);
+      scriptEl = null;
     };
+    global.document.documentElement.appendChild(scriptEl);
+
+    return handle;
+  };
 };
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],17:[function(_dereq_,module,exports){
-"use strict";
+},{}],21:[function(_dereq_,module,exports){
+'use strict';
 exports.test = function () {
-    return true;
+  return true;
 };
 
 exports.install = function (t) {
-    return function () {
-        setTimeout(t, 0);
-    };
+  return function () {
+    setTimeout(t, 0);
+  };
 };
-},{}]},{},[4])
-(4)
+},{}]},{},[5])
+(5)
 });

@@ -1,6 +1,6 @@
 {
   "name": "lie",
-  "version": "2.6.0",
+  "version": "2.7.0",
   "description": "A minimal and fast promise implementation",
   "license": "MIT",
   "repository": {
@@ -17,12 +17,13 @@
   ],
   "main": "lib/index.js",
   "scripts": {
-    "test": "jshint lib/*.js && mocha ./test/cover.js",
+    "test": "jshint lib/*.js && mocha -R nyan ./test/cover.js",
     "build-js": "browserify -s Promise ./lib/index.js > ./dist/lie.js",
     "build-min": "uglifyjs ./dist/lie.js -mc > ./dist/lie.min.js",
     "build-nc": "browserify -s Lie ./lib/index.js > ./dist/lie.noConflict.js",
     "build": "npm run build-js && npm run build-min && npm run build-nc",
-    "cover": "istanbul cover ./node_modules/mocha/bin/_mocha ./test/cover.js -- -R nyan"
+    "cover": "istanbul cover ./node_modules/mocha/bin/_mocha ./test/cover.js -- -R nyan",
+    "travis": "jshint lib/*.js && mocha -R spec ./test/cover.js"
   },
   "jam": {
     "main": "dist/lie.js",
@@ -41,6 +42,6 @@
     "mocha": "^1.18.0"
   },
   "dependencies": {
-    "immediate": "^2.6.3"
+    "immediate": "^2.7.0"
   }
 }
