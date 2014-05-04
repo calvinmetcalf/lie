@@ -1,6 +1,6 @@
 {
   "name": "lie",
-  "version": "2.7.1",
+  "version": "2.7.2",
   "description": "A minimal and fast promise implementation",
   "license": "MIT",
   "repository": {
@@ -42,6 +42,6 @@
     "mocha": "^1.18.0"
   },
   "dependencies": {
-    "immediate": "^2.7.0"
+    "immediate": "^2.7.1"
   }
 }
