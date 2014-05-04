@@ -6,40 +6,40 @@ module.exports = INTERNAL;
 function INTERNAL() {}
 },{}],2:[function(_dereq_,module,exports){
 'use strict';
-var INTERNAL = _dereq_('./INTERNAL');
 var Promise = _dereq_('./promise');
 var reject = _dereq_('./reject');
 var resolve = _dereq_('./resolve');
-var handlers = _dereq_('./handlers');
+var noArray = reject(new TypeError('must be an array'));
+var emptyArray = resolve([]);
 module.exports = function all(iterable) {
   if (Object.prototype.toString.call(iterable) !== '[object Array]') {
-    return reject(new TypeError('must be an array'));
+    return noArray;
   }
   var len = iterable.length;
   if (!len) {
-    return resolve([]);
+    return emptyArray;
   }
   var values = [];
   var resolved = 0;
   var i = -1;
-  var promise = new Promise(INTERNAL);
-  function allResolver(value, i) {
-    resolve(value).then(function (outValue) {
-      values[i] = outValue;
-      if (++resolved === len) {
-        handlers.resolve(promise, values);
-      }
-    }, function (error) {
-      handlers.reject(promise, error);
-    });
-  }
-  
-  while (++i < len) {
-    allResolver(iterable[i], i);
-  }
-  return promise;
+  return new Promise(function (fulfill, reject) {
+    function allResolver(value, i) {
+      resolve(value).then(function (outValue) {
+        values[i] = outValue;
+        if (++resolved === len) {
+          fulfill(values);
+        }
+      }, function (error) {
+        reject(error);
+      });
+    }
+    
+    while (++i < len) {
+      allResolver(iterable[i], i);
+    }
+  });
 };
-},{"./INTERNAL":1,"./handlers":4,"./promise":7,"./reject":9,"./resolve":10}],3:[function(_dereq_,module,exports){
+},{"./promise":7,"./reject":9,"./resolve":10}],3:[function(_dereq_,module,exports){
 'use strict';
 
 module.exports = getThen;
@@ -218,6 +218,9 @@ var EMPTYSTRING = handlers.resolve(new Promise(INTERNAL), '');
 
 function resolve(value) {
   if (value) {
+    if (value instanceof Promise) {
+      return value;
+    }
     return handlers.resolve(new Promise(INTERNAL), value);
   }
   var valueType = typeof value;
@@ -320,9 +323,12 @@ var types = [
 var handlerQueue = [];
 function drainQueue() {
   var task;
-  while ((task = handlerQueue.shift())) {
+  var i = -1;
+  while ((task = handlerQueue[++i])) {
     task();
+    handlerQueue[i] = undefined;
   }
+  handlerQueue = [];
 }
 var nextTick;
 var i = -1;
