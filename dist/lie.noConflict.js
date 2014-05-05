@@ -10,14 +10,13 @@ var Promise = _dereq_('./promise');
 var reject = _dereq_('./reject');
 var resolve = _dereq_('./resolve');
 var noArray = reject(new TypeError('must be an array'));
-var emptyArray = resolve([]);
 module.exports = function all(iterable) {
   if (Object.prototype.toString.call(iterable) !== '[object Array]') {
     return noArray;
   }
   var len = iterable.length;
   if (!len) {
-    return emptyArray;
+    return resolve([]);
   }
   var values = [];
   var resolved = 0;
@@ -323,12 +322,9 @@ var types = [
 var handlerQueue = [];
 function drainQueue() {
   var task;
-  var i = -1;
-  while ((task = handlerQueue[++i])) {
+  while ((task = handlerQueue.shift())) {
     task();
-    handlerQueue[i] = undefined;
   }
-  handlerQueue = [];
 }
 var nextTick;
 var i = -1;
