@@ -42,6 +42,6 @@
     "mocha": "^1.18.0"
   },
   "dependencies": {
-    "immediate": "^2.7.1"
+    "immediate": "^3.0.0"
   }
 }
