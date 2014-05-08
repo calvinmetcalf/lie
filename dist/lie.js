@@ -9,36 +9,41 @@ function INTERNAL() {}
 var Promise = _dereq_('./promise');
 var reject = _dereq_('./reject');
 var resolve = _dereq_('./resolve');
+var INTERNAL = _dereq_('./INTERNAL');
+var handlers = _dereq_('./handlers');
 var noArray = reject(new TypeError('must be an array'));
 module.exports = function all(iterable) {
   if (Object.prototype.toString.call(iterable) !== '[object Array]') {
     return noArray;
   }
+
   var len = iterable.length;
   if (!len) {
     return resolve([]);
   }
-  var values = [];
+
+  var values = new Array(len);
   var resolved = 0;
   var i = -1;
-  return new Promise(function (fulfill, reject) {
-    function allResolver(value, i) {
-      resolve(value).then(function (outValue) {
-        values[i] = outValue;
-        if (++resolved === len) {
-          fulfill(values);
-        }
-      }, function (error) {
-        reject(error);
-      });
+  var promise = new Promise(INTERNAL);
+  
+  while (++i < len) {
+    allResolver(iterable[i], i);
+  }
+  return promise;
+  function allResolver(value, i) {
+    resolve(value).then(resolveFromAll, function (error) {
+      handlers.reject(promise, error);
+    });
+    function resolveFromAll(outValue) {
+      values[i] = outValue;
+      if (++resolved === len) {
+        handlers.resolve(promise, values);
+      }
     }
-    
-    while (++i < len) {
-      allResolver(iterable[i], i);
-    }
-  });
+  }
 };
-},{"./promise":7,"./reject":9,"./resolve":10}],3:[function(_dereq_,module,exports){
+},{"./INTERNAL":1,"./handlers":4,"./promise":6,"./reject":8,"./resolve":9}],3:[function(_dereq_,module,exports){
 'use strict';
 
 module.exports = getThen;
@@ -89,31 +94,13 @@ exports.reject = function (self, error) {
   }
   return self;
 };
-},{"./getThen":3,"./resolveThenable":11,"./states":12,"./tryCatch":13}],5:[function(_dereq_,module,exports){
+},{"./getThen":3,"./resolveThenable":10,"./states":11,"./tryCatch":12}],5:[function(_dereq_,module,exports){
 module.exports = exports = _dereq_('./promise');
 
 exports.resolve = _dereq_('./resolve');
 exports.reject = _dereq_('./reject');
 exports.all = _dereq_('./all');
-},{"./all":2,"./promise":7,"./reject":9,"./resolve":10}],6:[function(_dereq_,module,exports){
-'use strict';
-
-module.exports = once;
-
-/* Wrap an arbitrary number of functions and allow only one of them to be
-   executed and only once */
-function once() {
-  var called = 0;
-  return function wrapper(wrappedFunction) {
-    return function () {
-      if (called++) {
-        return;
-      }
-      wrappedFunction.apply(this, arguments);
-    };
-  };
-}
-},{}],7:[function(_dereq_,module,exports){
+},{"./all":2,"./promise":6,"./reject":8,"./resolve":9}],6:[function(_dereq_,module,exports){
 'use strict';
 
 var unwrap = _dereq_('./unwrap');
@@ -160,7 +147,7 @@ Promise.prototype.then = function (onFulfilled, onRejected) {
   return promise;
 };
 
-},{"./INTERNAL":1,"./queueItem":8,"./resolveThenable":11,"./states":12,"./unwrap":14}],8:[function(_dereq_,module,exports){
+},{"./INTERNAL":1,"./queueItem":7,"./resolveThenable":10,"./states":11,"./unwrap":13}],7:[function(_dereq_,module,exports){
 'use strict';
 var handlers = _dereq_('./handlers');
 var unwrap = _dereq_('./unwrap');
@@ -189,7 +176,7 @@ QueueItem.prototype.callRejected = function (value) {
 QueueItem.prototype.otherCallRejected = function (value) {
   unwrap(this.promise, this.onRejected, value);
 };
-},{"./handlers":4,"./unwrap":14}],9:[function(_dereq_,module,exports){
+},{"./handlers":4,"./unwrap":13}],8:[function(_dereq_,module,exports){
 'use strict';
 
 var Promise = _dereq_('./promise');
@@ -201,7 +188,7 @@ function reject(reason) {
 	var promise = new Promise(INTERNAL);
 	return handlers.reject(promise, reason);
 }
-},{"./INTERNAL":1,"./handlers":4,"./promise":7}],10:[function(_dereq_,module,exports){
+},{"./INTERNAL":1,"./handlers":4,"./promise":6}],9:[function(_dereq_,module,exports){
 'use strict';
 
 var Promise = _dereq_('./promise');
@@ -236,37 +223,46 @@ function resolve(value) {
       return EMPTYSTRING;
   }
 }
-},{"./INTERNAL":1,"./handlers":4,"./promise":7}],11:[function(_dereq_,module,exports){
+},{"./INTERNAL":1,"./handlers":4,"./promise":6}],10:[function(_dereq_,module,exports){
 'use strict';
-var once = _dereq_('./once');
 var handlers = _dereq_('./handlers');
 var tryCatch = _dereq_('./tryCatch');
 function safelyResolveThenable(self, thenable) {
   // Either fulfill, reject or reject with error
-  var onceWrapper = once();
-  var onError = onceWrapper(function (value) {
-    return handlers.reject(self, value);
-  });
-  var result = tryCatch(function () {
-    thenable(
-      onceWrapper(function (value) {
-        return handlers.resolve(self, value);
-      }),
-      onError
-    );
-  });
+  var called = false;
+  function onError(value) {
+    if (called) {
+      return;
+    }
+    called = true;
+    handlers.reject(self, value);
+  }
+
+  function onSuccess(value) {
+    if (called) {
+      return;
+    }
+    called = true;
+    handlers.resolve(self, value);
+  }
+
+  function tryToUnwrap() {
+    thenable(onSuccess, onError);
+  }
+  
+  var result = tryCatch(tryToUnwrap);
   if (result.status === 'error') {
     onError(result.value);
   }
 }
 exports.safely = safelyResolveThenable;
-},{"./handlers":4,"./once":6,"./tryCatch":13}],12:[function(_dereq_,module,exports){
+},{"./handlers":4,"./tryCatch":12}],11:[function(_dereq_,module,exports){
 // Lazy man's symbols for states
 
 exports.REJECTED = ['REJECTED'];
 exports.FULFILLED = ['FULFILLED'];
 exports.PENDING = ['PENDING'];
-},{}],13:[function(_dereq_,module,exports){
+},{}],12:[function(_dereq_,module,exports){
 'use strict';
 
 module.exports = tryCatch;
@@ -282,7 +278,7 @@ function tryCatch(func, value) {
   }
   return out;
 }
-},{}],14:[function(_dereq_,module,exports){
+},{}],13:[function(_dereq_,module,exports){
 'use strict';
 
 var immediate = _dereq_('immediate');
@@ -304,63 +300,47 @@ function unwrap(promise, func, value) {
     }
   });
 }
-},{"./handlers":4,"immediate":16}],15:[function(_dereq_,module,exports){
-'use strict';
-exports.test = function () {
-  return false;
-};
-},{}],16:[function(_dereq_,module,exports){
+},{"./handlers":4,"immediate":14}],14:[function(_dereq_,module,exports){
 'use strict';
 var types = [
   _dereq_('./nextTick'),
-  _dereq_('./mutation'),
-  _dereq_('./postMessage'),
   _dereq_('./messageChannel'),
   _dereq_('./stateChange'),
   _dereq_('./timeout')
 ];
-var handlerQueue = [];
+var draining;
+var queue = [];
 function drainQueue() {
-  var task;
-  while ((task = handlerQueue.shift())) {
-    task();
+  draining = true;
+  var i, oldQueue;
+  var len = queue.length;
+  while (len) {
+    oldQueue = queue;
+    queue = [];
+    i = -1;
+    while (++i < len) {
+      oldQueue[i]();
+    }
+    len = queue.length;
   }
+  draining = false;
 }
-var nextTick;
+var scheduleDrain;
 var i = -1;
 var len = types.length;
 while (++ i < len) {
   if (types[i].test()) {
-    nextTick = types[i].install(drainQueue);
+    scheduleDrain = types[i].install(drainQueue);
     break;
   }
 }
-module.exports = function (task) {
-  var len, i, args;
-  var nTask = task;
-  if (arguments.length > 1 && typeof task === 'function') {
-    args = new Array(arguments.length - 1);
-    i = 0;
-    while (++i < arguments.length) {
-      args[i - 1] = arguments[i];
-    }
-    nTask = function () {
-      task.apply(undefined, args);
-    };
+module.exports = immediate;
+function immediate(task) {
+  if (queue.push(task) === 1 && !draining) {
+    scheduleDrain();
   }
-  if ((len = handlerQueue.push(nTask)) === 1) {
-    nextTick(drainQueue);
-  }
-  return len;
-};
-module.exports.clear = function (n) {
-  if (n <= handlerQueue.length) {
-    handlerQueue[n - 1] = function () {};
-  }
-  return this;
-};
-
-},{"./messageChannel":17,"./mutation":18,"./nextTick":15,"./postMessage":19,"./stateChange":20,"./timeout":21}],17:[function(_dereq_,module,exports){
+}
+},{"./messageChannel":15,"./nextTick":16,"./stateChange":17,"./timeout":18}],15:[function(_dereq_,module,exports){
 (function (global){
 'use strict';
 
@@ -381,7 +361,7 @@ exports.install = function (func) {
   };
 };
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],18:[function(_dereq_,module,exports){
+},{}],16:[function(_dereq_,module,exports){
 (function (global){
 'use strict';
 //based off rsvp https://github.com/tildeio/rsvp.js
@@ -406,50 +386,7 @@ exports.install = function (handle) {
   };
 };
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],19:[function(_dereq_,module,exports){
-(function (global){
-'use strict';
-// The test against `importScripts` prevents this implementation from being installed inside a web worker,
-// where `global.postMessage` means something completely different and can't be used for this purpose.
-
-exports.test = function () {
-  if (!global.postMessage || global.importScripts) {
-    return false;
-  }
-  if (global.setImmediate) {
-    // we can only get here in IE10
-    // which doesn't handel postMessage well
-    return false;
-  }
-  var postMessageIsAsynchronous = true;
-  var oldOnMessage = global.onmessage;
-  global.onmessage = function () {
-    postMessageIsAsynchronous = false;
-  };
-  global.postMessage('', '*');
-  global.onmessage = oldOnMessage;
-
-  return postMessageIsAsynchronous;
-};
-
-exports.install = function (func) {
-  var codeWord = 'com.calvinmetcalf.setImmediate' + Math.random();
-  function globalMessage(event) {
-    if (event.source === global && event.data === codeWord) {
-      func();
-    }
-  }
-  if (global.addEventListener) {
-    global.addEventListener('message', globalMessage, false);
-  } else {
-    global.attachEvent('onmessage', globalMessage);
-  }
-  return function () {
-    global.postMessage(codeWord, '*');
-  };
-};
-}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],20:[function(_dereq_,module,exports){
+},{}],17:[function(_dereq_,module,exports){
 (function (global){
 'use strict';
 
@@ -476,7 +413,7 @@ exports.install = function (handle) {
   };
 };
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],21:[function(_dereq_,module,exports){
+},{}],18:[function(_dereq_,module,exports){
 'use strict';
 exports.test = function () {
   return true;
