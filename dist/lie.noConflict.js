@@ -62,9 +62,9 @@ exports.resolve = function (self, value) {
     self.state = states.FULFILLED;
     self.outcome = value;
     var i = -1;
-    var len = self.queueLength;
+    var len = self.queue.length;
     while (++i < len) {
-      self[i].callFulfilled(value);
+      self.queue[i].callFulfilled(value);
     }
   }
   return self;
@@ -73,9 +73,9 @@ exports.reject = function (self, error) {
   self.state = states.REJECTED;
   self.outcome = error;
   var i = -1;
-  var len = self.queueLength;
+  var len = self.queue.length;
   while (++i < len) {
-    self[i].callRejected(error);
+    self.queue[i].callRejected(error);
   }
   return self;
 };
@@ -113,8 +113,8 @@ function Promise(resolver) {
     throw new TypeError('reslover must be a function');
   }
   this.state = states.PENDING;
-  this.queueLength = 0;
-  this[0] = void 0;
+  this.queue = [];
+  this.outcome = void 0;
   if (resolver !== INTERNAL) {
     resolveThenable.safely(this, resolver);
   }
@@ -135,7 +135,7 @@ Promise.prototype.then = function (onFulfilled, onRejected) {
     var resolver = this.state === states.FULFILLED ? onFulfilled: onRejected;
     unwrap(promise, resolver, this.outcome);
   } else {
-    this[this.queueLength++] = new QueueItem(promise, onFulfilled, onRejected);
+    this.queue.push(new QueueItem(promise, onFulfilled, onRejected));
   }
 
   return promise;
