@@ -43,24 +43,9 @@ module.exports = function all(iterable) {
     }
   }
 };
-},{"./INTERNAL":1,"./handlers":4,"./promise":6,"./reject":8,"./resolve":9}],3:[function(_dereq_,module,exports){
-'use strict';
-
-module.exports = getThen;
-
-function getThen(obj) {
-  // Make sure we only access the accessor once as required by the spec
-  var then = obj && obj.then;
-  if (obj && typeof obj === 'object' && typeof then === 'function') {
-    return function appyThen() {
-      then.apply(obj, arguments);
-    };
-  }
-}
-},{}],4:[function(_dereq_,module,exports){
+},{"./INTERNAL":1,"./handlers":3,"./promise":5,"./reject":7,"./resolve":8}],3:[function(_dereq_,module,exports){
 'use strict';
 var tryCatch = _dereq_('./tryCatch');
-var getThen = _dereq_('./getThen');
 var resolveThenable = _dereq_('./resolveThenable');
 var states = _dereq_('./states');
 
@@ -77,9 +62,9 @@ exports.resolve = function (self, value) {
     self.state = states.FULFILLED;
     self.outcome = value;
     var i = -1;
-    var len = self.queue.length;
+    var len = self.queueLength;
     while (++i < len) {
-      self.queue[i].callFulfilled(value);
+      self[i].callFulfilled(value);
     }
   }
   return self;
@@ -88,19 +73,29 @@ exports.reject = function (self, error) {
   self.state = states.REJECTED;
   self.outcome = error;
   var i = -1;
-  var len = self.queue.length;
+  var len = self.queueLength;
   while (++i < len) {
-    self.queue[i].callRejected(error);
+    self[i].callRejected(error);
   }
   return self;
 };
-},{"./getThen":3,"./resolveThenable":10,"./states":11,"./tryCatch":12}],5:[function(_dereq_,module,exports){
+
+function getThen(obj) {
+  // Make sure we only access the accessor once as required by the spec
+  var then = obj && obj.then;
+  if (obj && typeof obj === 'object' && typeof then === 'function') {
+    return function appyThen() {
+      then.apply(obj, arguments);
+    };
+  }
+}
+},{"./resolveThenable":9,"./states":10,"./tryCatch":11}],4:[function(_dereq_,module,exports){
 module.exports = exports = _dereq_('./promise');
 
 exports.resolve = _dereq_('./resolve');
 exports.reject = _dereq_('./reject');
 exports.all = _dereq_('./all');
-},{"./all":2,"./promise":6,"./reject":8,"./resolve":9}],6:[function(_dereq_,module,exports){
+},{"./all":2,"./promise":5,"./reject":7,"./resolve":8}],5:[function(_dereq_,module,exports){
 'use strict';
 
 var unwrap = _dereq_('./unwrap');
@@ -118,7 +113,8 @@ function Promise(resolver) {
     throw new TypeError('reslover must be a function');
   }
   this.state = states.PENDING;
-  this.queue = [];
+  this.queueLength = 0;
+  this[0] = void 0;
   if (resolver !== INTERNAL) {
     resolveThenable.safely(this, resolver);
   }
@@ -128,8 +124,6 @@ Promise.prototype['catch'] = function (onRejected) {
   return this.then(null, onRejected);
 };
 Promise.prototype.then = function (onFulfilled, onRejected) {
-  var onFulfilledFunc = typeof onFulfilled === 'function';
-  var onRejectedFunc = typeof onRejected === 'function';
   if (typeof onFulfilled !== 'function' && this.state === states.FULFILLED ||
     typeof onRejected !== 'function' && this.state === states.REJECTED) {
     return this;
@@ -141,13 +135,13 @@ Promise.prototype.then = function (onFulfilled, onRejected) {
     var resolver = this.state === states.FULFILLED ? onFulfilled: onRejected;
     unwrap(promise, resolver, this.outcome);
   } else {
-    this.queue.push(new QueueItem(promise, onFulfilled, onRejected));
+    this[this.queueLength++] = new QueueItem(promise, onFulfilled, onRejected);
   }
 
   return promise;
 };
 
-},{"./INTERNAL":1,"./queueItem":7,"./resolveThenable":10,"./states":11,"./unwrap":13}],7:[function(_dereq_,module,exports){
+},{"./INTERNAL":1,"./queueItem":6,"./resolveThenable":9,"./states":10,"./unwrap":12}],6:[function(_dereq_,module,exports){
 'use strict';
 var handlers = _dereq_('./handlers');
 var unwrap = _dereq_('./unwrap');
@@ -176,7 +170,7 @@ QueueItem.prototype.callRejected = function (value) {
 QueueItem.prototype.otherCallRejected = function (value) {
   unwrap(this.promise, this.onRejected, value);
 };
-},{"./handlers":4,"./unwrap":13}],8:[function(_dereq_,module,exports){
+},{"./handlers":3,"./unwrap":12}],7:[function(_dereq_,module,exports){
 'use strict';
 
 var Promise = _dereq_('./promise');
@@ -188,7 +182,7 @@ function reject(reason) {
 	var promise = new Promise(INTERNAL);
 	return handlers.reject(promise, reason);
 }
-},{"./INTERNAL":1,"./handlers":4,"./promise":6}],9:[function(_dereq_,module,exports){
+},{"./INTERNAL":1,"./handlers":3,"./promise":5}],8:[function(_dereq_,module,exports){
 'use strict';
 
 var Promise = _dereq_('./promise');
@@ -223,7 +217,7 @@ function resolve(value) {
       return EMPTYSTRING;
   }
 }
-},{"./INTERNAL":1,"./handlers":4,"./promise":6}],10:[function(_dereq_,module,exports){
+},{"./INTERNAL":1,"./handlers":3,"./promise":5}],9:[function(_dereq_,module,exports){
 'use strict';
 var handlers = _dereq_('./handlers');
 var tryCatch = _dereq_('./tryCatch');
@@ -256,13 +250,13 @@ function safelyResolveThenable(self, thenable) {
   }
 }
 exports.safely = safelyResolveThenable;
-},{"./handlers":4,"./tryCatch":12}],11:[function(_dereq_,module,exports){
+},{"./handlers":3,"./tryCatch":11}],10:[function(_dereq_,module,exports){
 // Lazy man's symbols for states
 
 exports.REJECTED = ['REJECTED'];
 exports.FULFILLED = ['FULFILLED'];
 exports.PENDING = ['PENDING'];
-},{}],12:[function(_dereq_,module,exports){
+},{}],11:[function(_dereq_,module,exports){
 'use strict';
 
 module.exports = tryCatch;
@@ -278,7 +272,7 @@ function tryCatch(func, value) {
   }
   return out;
 }
-},{}],13:[function(_dereq_,module,exports){
+},{}],12:[function(_dereq_,module,exports){
 'use strict';
 
 var immediate = _dereq_('immediate');
@@ -300,10 +294,13 @@ function unwrap(promise, func, value) {
     }
   });
 }
-},{"./handlers":4,"immediate":14}],14:[function(_dereq_,module,exports){
+},{"./handlers":3,"immediate":14}],13:[function(_dereq_,module,exports){
+
+},{}],14:[function(_dereq_,module,exports){
 'use strict';
 var types = [
   _dereq_('./nextTick'),
+  _dereq_('./mutation.js'),
   _dereq_('./messageChannel'),
   _dereq_('./stateChange'),
   _dereq_('./timeout')
@@ -329,7 +326,7 @@ var scheduleDrain;
 var i = -1;
 var len = types.length;
 while (++ i < len) {
-  if (types[i].test()) {
+  if (types[i] && types[i].test && types[i].test()) {
     scheduleDrain = types[i].install(drainQueue);
     break;
   }
@@ -340,7 +337,7 @@ function immediate(task) {
     scheduleDrain();
   }
 }
-},{"./messageChannel":15,"./nextTick":16,"./stateChange":17,"./timeout":18}],15:[function(_dereq_,module,exports){
+},{"./messageChannel":15,"./mutation.js":16,"./nextTick":13,"./stateChange":17,"./timeout":18}],15:[function(_dereq_,module,exports){
 (function (global){
 'use strict';
 
@@ -424,6 +421,6 @@ exports.install = function (t) {
     setTimeout(t, 0);
   };
 };
-},{}]},{},[5])
-(5)
+},{}]},{},[4])
+(4)
 });
