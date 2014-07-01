@@ -18,6 +18,7 @@ module.exports = function all(iterable) {
   }
 
   var len = iterable.length;
+  var called = false;
   if (!len) {
     return resolve([]);
   }
@@ -33,11 +34,15 @@ module.exports = function all(iterable) {
   return promise;
   function allResolver(value, i) {
     resolve(value).then(resolveFromAll, function (error) {
-      handlers.reject(promise, error);
+      if (!called) {
+        called = true;
+        handlers.reject(promise, error);
+      }
     });
     function resolveFromAll(outValue) {
       values[i] = outValue;
-      if (++resolved === len) {
+      if (++resolved === len & !called) {
+        called = true;
         handlers.resolve(promise, values);
       }
     }
@@ -294,13 +299,10 @@ function unwrap(promise, func, value) {
     }
   });
 }
-},{"./handlers":3,"immediate":14}],13:[function(_dereq_,module,exports){
-
-},{}],14:[function(_dereq_,module,exports){
+},{"./handlers":3,"immediate":13}],13:[function(_dereq_,module,exports){
 'use strict';
 var types = [
   _dereq_('./nextTick'),
-  _dereq_('./mutation.js'),
   _dereq_('./messageChannel'),
   _dereq_('./stateChange'),
   _dereq_('./timeout')
@@ -326,7 +328,7 @@ var scheduleDrain;
 var i = -1;
 var len = types.length;
 while (++ i < len) {
-  if (types[i] && types[i].test && types[i].test()) {
+  if (types[i].test()) {
     scheduleDrain = types[i].install(drainQueue);
     break;
   }
@@ -337,7 +339,7 @@ function immediate(task) {
     scheduleDrain();
   }
 }
-},{"./messageChannel":15,"./mutation.js":16,"./nextTick":13,"./stateChange":17,"./timeout":18}],15:[function(_dereq_,module,exports){
+},{"./messageChannel":14,"./nextTick":15,"./stateChange":16,"./timeout":17}],14:[function(_dereq_,module,exports){
 (function (global){
 'use strict';
 
@@ -358,7 +360,7 @@ exports.install = function (func) {
   };
 };
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],16:[function(_dereq_,module,exports){
+},{}],15:[function(_dereq_,module,exports){
 (function (global){
 'use strict';
 //based off rsvp https://github.com/tildeio/rsvp.js
@@ -383,7 +385,7 @@ exports.install = function (handle) {
   };
 };
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],17:[function(_dereq_,module,exports){
+},{}],16:[function(_dereq_,module,exports){
 (function (global){
 'use strict';
 
@@ -410,7 +412,7 @@ exports.install = function (handle) {
   };
 };
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],18:[function(_dereq_,module,exports){
+},{}],17:[function(_dereq_,module,exports){
 'use strict';
 exports.test = function () {
   return true;
