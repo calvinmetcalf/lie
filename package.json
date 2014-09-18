@@ -27,7 +27,7 @@
     "build-poly-min": "uglifyjs ./dist/lie.polyfill.js -mc > ./dist/lie.polyfill.min.js",
     "build-poly": "npm run build-poly-js && npm run build-poly-min",
     "build": "npm run build-js && npm run build-min && npm run build-nc && npm run build-poly",
-    "cover": "istanbul cover _mocha ./test/cover.js -- -R spec &&  && istanbul check-coverage --lines 100 --function 100 --statements 100 --branches 100",
+    "cover": "istanbul cover _mocha ./test/cover.js -- -R spec && istanbul check-coverage --lines 100 --function 100 --statements 100 --branches 100",
     "jshint": "jshint lib/*.js",
     "node": "mocha -R spec ./test/cover.js",
     "browser": "browserify test/cover.js > test/browser.js && mocha-phantomjs test/test.html"
