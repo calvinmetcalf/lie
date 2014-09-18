@@ -3,4 +3,11 @@ language: node_js
 node_js:
   - "0.10"
 
-script: npm run travis
+script: npm run $COMMAND
+
+env:
+  matrix:
+  - COMMAND=node
+  - COMMAND=browser
+  - COMMAND=cover
+  - COMMAND=jshint
