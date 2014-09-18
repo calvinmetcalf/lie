@@ -8,40 +8,19 @@ lie a small, performant, promise library implementing the [Promises/A+ spec Vers
 
 A originally a fork of [Ruben Verborgh's](https://github.com/RubenVerborgh) library called [promiscuous](https://github.com/RubenVerborgh/promiscuous), version 2.6 and above are forked from [ayepromise](https://github.com/cburgmer/ayepromise) by [Chris Burgmer](https://github.com/cburgmer).
 
-
-## API
-
-by default adds a function called 'Promise' to the global scope (or if you grab the noConflict version than one called Lie)
-
-### return a promise
-```javascript
-new Promise(function(resolve, reject){
-    doSomething(function(err, result) {
-        if (err) {
-            reject(err);
-        } else {
-            resolve(result);
-        }
-    });
-}).then(function (value) {
-    //on success
-}, function (reason) {
-    //on error
-}).catch(function (reason) {
-    //short cut for error handling
-});
-
-Promise.all([
-    //array of promises or values
-]).then(function ([/* array of results */]));
+```bash
+npm install lie
 
 ```
 
-##node
-
-install with `npm install lie`, exactly the same as above but 
-
 ```javascript
-var promise = require('lie');
+var Promise = require('lie');
 ```
 
+## Browser!
+
+Either use it with [browserify](http://browserify.org/) (recomended) or grab one of the files from the dist folder
+
+- lie.js/lie.min.js makes 'Promise' available in global scope (or since it's a UMD `Promise` will be availble through a CJS or AMD loader if it's available instead)
+- lie.noConflict.js/lie.noConflict.min.js makes 'Lie' availble in global scope, otherwise they the same as lie.js/lie.min.js
+- lie.polyfill.js/lie.polyfill.min.js adds 'Promise' to the global scope only if it's not already defined (not a UMD).
