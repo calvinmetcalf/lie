@@ -28,7 +28,8 @@
     "build-poly": "npm run build-poly-js && npm run build-poly-min",
     "build": "npm run build-js && npm run build-min && npm run build-nc && npm run build-poly",
     "cover": "istanbul cover ./node_modules/mocha/bin/_mocha ./test/cover.js -- -R nyan",
-    "travis": "jshint lib/*.js && mocha -R spec ./test/cover.js"
+    "travis": "jshint lib/*.js && mocha -R spec ./test/cover.js",
+    "browser": "browserify test/cover.js > test/browser.js && mocha-phantomjs test/test.html"
   },
   "jam": {
     "main": "dist/lie.js",
@@ -42,9 +43,11 @@
     "uglify-js": "^2.4.13",
     "jshint": "^2.4.4",
     "istanbul": "^0.2.6",
-    "promises-aplus-tests": "^2.0.4",
+    "promises-aplus-tests": "calvinmetcalf/promises-tests#browser-phantom",
     "mocha": "^1.18.0",
-    "derequire": "^1.2.0"
+    "derequire": "^1.2.0",
+    "phantomjs": "^1.9.9",
+    "mocha-phantomjs": "^3.5.0"
   },
   "dependencies": {
     "immediate": "^3.0.0",
