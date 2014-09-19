@@ -1,4 +1,4 @@
-# lie [![Build Status](https://travis-ci.org/calvinmetcalf/lie.svg?branch=master)](https://travis-ci.org/calvinmetcalf/lie)
+# lie 
 <a href="http://promises-aplus.github.com/promises-spec">
   <img src="http://promises-aplus.github.com/promises-spec/assets/logo-small.png"
        alt="Promises/A+ logo" title="Promises/A+ 1.1 compliant" align="right" />
