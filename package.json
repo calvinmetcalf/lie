@@ -44,7 +44,7 @@
     "uglify-js": "^2.4.13",
     "jshint": "^2.4.4",
     "istanbul": "^0.2.6",
-    "promises-aplus-tests": "calvinmetcalf/promises-tests#browser-phantom",
+    "promises-aplus-tests": "calvinmetcalf/promises-tests#phantom",
     "mocha": "^1.18.0",
     "derequire": "^1.2.0",
     "phantomjs": "^1.9.9",
