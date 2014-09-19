@@ -5,7 +5,7 @@ node_js:
 
 before_script:
   - "cd node_modules/promises-aplus-tests"
-  - "npm prepublish"
+  - "npm run prepublish"
   - "cd ../.."
 
 script: npm run $COMMAND
