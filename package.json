@@ -1,6 +1,6 @@
 {
   "name": "lie",
-  "version": "2.7.7",
+  "version": "2.8.0",
   "description": "A minimal and fast promise implementation",
   "license": "MIT",
   "repository": {
@@ -13,7 +13,8 @@
   "keywords": [
     "lie",
     "promise",
-    "async"
+    "async",
+    "aplus"
   ],
   "main": "lib/index.js",
   "scripts": {
@@ -48,10 +49,10 @@
     "mocha": "^1.18.0",
     "derequire": "^1.2.0",
     "phantomjs": "^1.9.9",
-    "mocha-phantomjs": "^3.5.0"
+    "mocha-phantomjs": "^3.5.0",
+    "browserify": "^5.11.2"
   },
   "dependencies": {
-    "immediate": "^3.0.0",
-    "browserify": "^5.11.2"
+    "immediate": "^3.0.0"
   }
 }
