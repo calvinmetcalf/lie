@@ -116,7 +116,7 @@ function Promise(resolver) {
     return new Promise(resolver);
   }
   if (typeof resolver !== 'function') {
-    throw new TypeError('reslover must be a function');
+    throw new TypeError('resolver must be a function');
   }
   this.state = states.PENDING;
   this.queue = [];
@@ -706,8 +706,8 @@ var objectKeys = Object.keys || function (obj) {
 };
 
 },{"util/":21}],16:[function(require,module,exports){
-module.exports=require(14)
-},{"/Users/cmetcalf/projects/lie/node_modules/browserify/lib/_empty.js":14}],17:[function(require,module,exports){
+arguments[4][14][0].apply(exports,arguments)
+},{"dup":14}],17:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -968,6 +968,8 @@ var process = module.exports = {};
 process.nextTick = (function () {
     var canSetImmediate = typeof window !== 'undefined'
     && window.setImmediate;
+    var canMutationObserver = typeof window !== 'undefined'
+    && window.MutationObserver;
     var canPost = typeof window !== 'undefined'
     && window.postMessage && window.addEventListener
     ;
@@ -976,8 +978,29 @@ process.nextTick = (function () {
         return function (f) { return window.setImmediate(f) };
     }
 
+    var queue = [];
+
+    if (canMutationObserver) {
+        var hiddenDiv = document.createElement("div");
+        var observer = new MutationObserver(function () {
+            var queueList = queue.slice();
+            queue.length = 0;
+            queueList.forEach(function (fn) {
+                fn();
+            });
+        });
+
+        observer.observe(hiddenDiv, { attributes: true });
+
+        return function nextTick(fn) {
+            if (!queue.length) {
+                hiddenDiv.setAttribute('yes', 'no');
+            }
+            queue.push(fn);
+        };
+    }
+
     if (canPost) {
-        var queue = [];
         window.addEventListener('message', function (ev) {
             var source = ev.source;
             if ((source === window || source === null) && ev.data === 'process-tick') {
@@ -1017,7 +1040,7 @@ process.emit = noop;
 
 process.binding = function (name) {
     throw new Error('process.binding is not supported');
-}
+};
 
 // TODO(shtylman)
 process.cwd = function () { return '/' };
@@ -1626,6 +1649,7 @@ function hasOwnProperty(obj, prop) {
 'use strict';
 var types = [
   require('./nextTick'),
+  require('./mutation.js'),
   require('./messageChannel'),
   require('./stateChange'),
   require('./timeout')
@@ -1651,7 +1675,7 @@ var scheduleDrain;
 var i = -1;
 var len = types.length;
 while (++ i < len) {
-  if (types[i].test()) {
+  if (types[i] && types[i].test && types[i].test()) {
     scheduleDrain = types[i].install(drainQueue);
     break;
   }
@@ -1662,7 +1686,7 @@ function immediate(task) {
     scheduleDrain();
   }
 }
-},{"./messageChannel":23,"./nextTick":24,"./stateChange":25,"./timeout":26}],23:[function(require,module,exports){
+},{"./messageChannel":23,"./mutation.js":24,"./nextTick":16,"./stateChange":25,"./timeout":26}],23:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -1755,6 +1779,8 @@ var path = require("path");
 var fs = require("fs");
 var _ = require("underscore");
 
+var testsDir = path.resolve(__dirname, "tests");
+
 function normalizeAdapter(adapter) {
     if (!adapter.resolved) {
         adapter.resolved = function (value) {
@@ -1784,41 +1810,32 @@ module.exports = function (adapter, mochaOpts, cb) {
 
     normalizeAdapter(adapter);
     mochaOpts = _.defaults(mochaOpts, { timeout: 200, slow: Infinity });
-    var testFileNames = [
-        "./tests/2.1.2",
-        "./tests/2.1.3",
-        "./tests/2.2.1",
-        "./tests/2.2.2",
-        "./tests/2.2.3",
-        "./tests/2.2.4",
-        "./tests/2.2.5",
-        "./tests/2.2.6",
-        "./tests/2.2.7",
-        "./tests/2.3.1",
-        "./tests/2.3.2",
-        "./tests/2.3.3",
-        "./tests/2.3.7",
-    ];
 
-
-    var mocha = new Mocha(mochaOpts);
-    testFileNames.forEach(function (testFileName) {
-        if (path.extname(testFileName) === ".js") {
-            var testFilePath = path.resolve(__dirname, testFileName);
-            mocha.addFile(testFilePath);
-        }
-    });
-
-    global.adapter = adapter;
-    mocha.run(function (failures) {
-        delete global.adapter;
-        if (failures > 0) {
-            var err = new Error("Test suite failed with " + failures + " failures.");
-            err.failures = failures;
+    fs.readdir(testsDir, function (err, testFileNames) {
+        if (err) {
             cb(err);
-        } else {
-            cb(null);
+            return;
         }
+
+        var mocha = new Mocha(mochaOpts);
+        testFileNames.forEach(function (testFileName) {
+            if (path.extname(testFileName) === ".js") {
+                var testFilePath = path.resolve(testsDir, testFileName);
+                mocha.addFile(testFilePath);
+            }
+        });
+
+        global.adapter = adapter;
+        mocha.run(function (failures) {
+            delete global.adapter;
+            if (failures > 0) {
+                var err = new Error("Test suite failed with " + failures + " failures.");
+                err.failures = failures;
+                cb(err);
+            } else {
+                cb(null);
+            }
+        });
     });
 };
 
@@ -1827,25 +1844,28 @@ module.exports.mocha = function (adapter) {
 
     global.adapter = adapter;
 
-    require("./tests/2.1.2");
-    require("./tests/2.1.3");
-    require("./tests/2.2.1");
-    require("./tests/2.2.2");
-    require("./tests/2.2.3");
-    require("./tests/2.2.4");
-    require("./tests/2.2.5");
-    require("./tests/2.2.6");
-    require("./tests/2.2.7");
-    require("./tests/2.3.1");
-    require("./tests/2.3.2");
-    require("./tests/2.3.3");
-    require("./tests/2.3.4");
+    require("./testFiles");
 
     delete global.adapter;
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},"/node_modules/promises-aplus-tests/lib")
-},{"./tests/2.1.2":28,"./tests/2.1.3":29,"./tests/2.2.1":30,"./tests/2.2.2":31,"./tests/2.2.3":32,"./tests/2.2.4":33,"./tests/2.2.5":34,"./tests/2.2.6":35,"./tests/2.2.7":36,"./tests/2.3.1":37,"./tests/2.3.2":38,"./tests/2.3.3":39,"./tests/2.3.4":40,"fs":14,"mocha":16,"path":18,"underscore":59}],28:[function(require,module,exports){
+},{"./testFiles":28,"fs":14,"mocha":16,"path":18,"underscore":60}],28:[function(require,module,exports){
+require("./tests/2.1.2");
+require("./tests/2.1.3");
+require("./tests/2.2.1");
+require("./tests/2.2.2");
+require("./tests/2.2.3");
+require("./tests/2.2.4");
+require("./tests/2.2.5");
+require("./tests/2.2.6");
+require("./tests/2.2.7");
+require("./tests/2.3.1");
+require("./tests/2.3.2");
+require("./tests/2.3.3");
+require("./tests/2.3.4");
+
+},{"./tests/2.1.2":29,"./tests/2.1.3":30,"./tests/2.2.1":31,"./tests/2.2.2":32,"./tests/2.2.3":33,"./tests/2.2.4":34,"./tests/2.2.5":35,"./tests/2.2.6":36,"./tests/2.2.7":37,"./tests/2.3.1":38,"./tests/2.3.2":39,"./tests/2.3.3":40,"./tests/2.3.4":41}],29:[function(require,module,exports){
 (function (global){
 "use strict";
 
@@ -1925,7 +1945,7 @@ describe("2.1.2.1: When fulfilled, a promise: must not transition to any other s
 });
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./helpers/testThreeCases":42,"assert":15}],29:[function(require,module,exports){
+},{"./helpers/testThreeCases":43,"assert":15}],30:[function(require,module,exports){
 (function (global){
 "use strict";
 
@@ -2005,7 +2025,7 @@ describe("2.1.3.1: When rejected, a promise: must not transition to any other st
 });
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./helpers/testThreeCases":42,"assert":15}],30:[function(require,module,exports){
+},{"./helpers/testThreeCases":43,"assert":15}],31:[function(require,module,exports){
 (function (global){
 "use strict";
 
@@ -2086,7 +2106,7 @@ describe("2.2.1: Both `onFulfilled` and `onRejected` are optional arguments.", f
 });
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],31:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 (function (global){
 "use strict";
 
@@ -2241,7 +2261,7 @@ describe("2.2.2: If `onFulfilled` is a function,", function () {
 });
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./helpers/testThreeCases":42,"assert":15}],32:[function(require,module,exports){
+},{"./helpers/testThreeCases":43,"assert":15}],33:[function(require,module,exports){
 (function (global){
 "use strict";
 
@@ -2396,7 +2416,7 @@ describe("2.2.3: If `onRejected` is a function,", function () {
 });
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./helpers/testThreeCases":42,"assert":15}],33:[function(require,module,exports){
+},{"./helpers/testThreeCases":43,"assert":15}],34:[function(require,module,exports){
 (function (global){
 "use strict";
 
@@ -2582,7 +2602,7 @@ describe("2.2.4: `onFulfilled` or `onRejected` must not be called until the exec
 });
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./helpers/testThreeCases":42,"assert":15}],34:[function(require,module,exports){
+},{"./helpers/testThreeCases":43,"assert":15}],35:[function(require,module,exports){
 (function (global){
 /*jshint strict: false */
 
@@ -2593,15 +2613,16 @@ var resolved = adapter.resolved;
 var rejected = adapter.rejected;
 
 var dummy = { dummy: "dummy" }; // we fulfill or reject with this when we don't intend to test against it
-function browserSupport() {
+function impimentsUseStrictCorrectly() {
+    "use strict";
     function test() {
-        'use strict';
-        return !!this;
+        /*jshint validthis:true */
+        return !this;
     }
     return test();
 }
 describe("2.2.5 `onFulfilled` and `onRejected` must be called as functions (i.e. with no `this` value).", function () {
-    if (browserSupport()) {
+    if (impimentsUseStrictCorrectly()) {
         describe("strict mode", function () {
             specify("fulfilled", function (done) {
                 resolved(dummy).then(function onFulfilled() {
@@ -2640,7 +2661,7 @@ describe("2.2.5 `onFulfilled` and `onRejected` must be called as functions (i.e.
 });
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"assert":15}],35:[function(require,module,exports){
+},{"assert":15}],36:[function(require,module,exports){
 "use strict";
 
 var assert = require("assert");
@@ -2899,7 +2920,7 @@ describe("2.2.6: `then` may be called multiple times on the same promise.", func
     });
 });
 
-},{"./helpers/testThreeCases":42,"assert":15,"sinon":44}],36:[function(require,module,exports){
+},{"./helpers/testThreeCases":43,"assert":15,"sinon":45}],37:[function(require,module,exports){
 (function (global){
 "use strict";
 
@@ -3012,7 +3033,7 @@ describe("2.2.7: `then` must return a promise: `promise2 = promise1.then(onFulfi
 });
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./helpers/reasons":41,"./helpers/testThreeCases":42,"assert":15}],37:[function(require,module,exports){
+},{"./helpers/reasons":42,"./helpers/testThreeCases":43,"assert":15}],38:[function(require,module,exports){
 (function (global){
 "use strict";
 
@@ -3050,7 +3071,7 @@ describe("2.3.1: If `promise` and `x` refer to the same object, reject `promise`
 });
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"assert":15}],38:[function(require,module,exports){
+},{"assert":15}],39:[function(require,module,exports){
 (function (global){
 "use strict";
 
@@ -3180,7 +3201,7 @@ describe("2.3.2: If `x` is a promise, adopt its state", function () {
 });
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"assert":15}],39:[function(require,module,exports){
+},{"assert":15}],40:[function(require,module,exports){
 (function (global){
 "use strict";
 
@@ -4153,7 +4174,7 @@ describe("2.3.3: Otherwise, if `x` is an object or function,", function () {
 });
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./helpers/reasons":41,"./helpers/thenables":43,"assert":15}],40:[function(require,module,exports){
+},{"./helpers/reasons":42,"./helpers/thenables":44,"assert":15}],41:[function(require,module,exports){
 "use strict";
 
 var assert = require("assert");
@@ -4224,7 +4245,7 @@ describe("2.3.4: If `x` is not an object or function, fulfill `promise` with `x`
     );
 });
 
-},{"./helpers/testThreeCases":42,"assert":15}],41:[function(require,module,exports){
+},{"./helpers/testThreeCases":43,"assert":15}],42:[function(require,module,exports){
 (function (global){
 "use strict";
 
@@ -4284,7 +4305,7 @@ exports["a rejected promise"] = function () {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],42:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 (function (global){
 "use strict";
 
@@ -4334,7 +4355,7 @@ exports.testRejected = function (reason, test) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],43:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 (function (global){
 "use strict";
 
@@ -4480,7 +4501,7 @@ exports.rejected = {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],44:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 /*jslint eqeqeq: false, onevar: false, forin: true, nomen: false, regexp: false, plusplus: false*/
 /*global module, require, __dirname, document*/
 /**
@@ -4865,7 +4886,7 @@ var sinon = (function (formatio) {
     return sinon;
 }(typeof formatio == "object" && formatio));
 
-},{"./sinon/assert":45,"./sinon/behavior":46,"./sinon/call":47,"./sinon/collection":48,"./sinon/match":49,"./sinon/mock":50,"./sinon/sandbox":51,"./sinon/spy":52,"./sinon/stub":53,"./sinon/test":54,"./sinon/test_case":55,"formatio":57,"util":21}],45:[function(require,module,exports){
+},{"./sinon/assert":46,"./sinon/behavior":47,"./sinon/call":48,"./sinon/collection":49,"./sinon/match":50,"./sinon/mock":51,"./sinon/sandbox":52,"./sinon/spy":53,"./sinon/stub":54,"./sinon/test":55,"./sinon/test_case":56,"formatio":58,"util":21}],46:[function(require,module,exports){
 (function (global){
 /**
  * @depend ../sinon.js
@@ -5068,7 +5089,7 @@ var sinon = (function (formatio) {
 }(typeof sinon == "object" && sinon || null, typeof window != "undefined" ? window : (typeof self != "undefined") ? self : global));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../sinon":44}],46:[function(require,module,exports){
+},{"../sinon":45}],47:[function(require,module,exports){
 (function (process){
 /**
  * @depend ../sinon.js
@@ -5406,7 +5427,7 @@ var sinon = (function (formatio) {
 }(typeof sinon == "object" && sinon || null));
 
 }).call(this,require('_process'))
-},{"../sinon":44,"_process":19}],47:[function(require,module,exports){
+},{"../sinon":45,"_process":19}],48:[function(require,module,exports){
 /**
   * @depend ../sinon.js
   * @depend match.js
@@ -5613,7 +5634,7 @@ var sinon = (function (formatio) {
 }(typeof sinon == "object" && sinon || null));
 
 
-},{"../sinon":44}],48:[function(require,module,exports){
+},{"../sinon":45}],49:[function(require,module,exports){
 /**
  * @depend ../sinon.js
  * @depend stub.js
@@ -5770,7 +5791,7 @@ var sinon = (function (formatio) {
     }
 }(typeof sinon == "object" && sinon || null));
 
-},{"../sinon":44}],49:[function(require,module,exports){
+},{"../sinon":45}],50:[function(require,module,exports){
 /* @depend ../sinon.js */
 /*jslint eqeqeq: false, onevar: false, plusplus: false*/
 /*global module, require, sinon*/
@@ -6017,7 +6038,7 @@ var sinon = (function (formatio) {
     }
 }(typeof sinon == "object" && sinon || null));
 
-},{"../sinon":44}],50:[function(require,module,exports){
+},{"../sinon":45}],51:[function(require,module,exports){
 /**
  * @depend ../sinon.js
  * @depend stub.js
@@ -6470,7 +6491,7 @@ var sinon = (function (formatio) {
     }
 }(typeof sinon == "object" && sinon || null));
 
-},{"../sinon":44,"./match":49}],51:[function(require,module,exports){
+},{"../sinon":45,"./match":50}],52:[function(require,module,exports){
 /**
  * @depend ../sinon.js
  * @depend collection.js
@@ -6616,7 +6637,7 @@ if (typeof module !== "undefined" && module.exports && typeof require == "functi
     }
 }());
 
-},{"../sinon":44,"./util/fake_timers":56}],52:[function(require,module,exports){
+},{"../sinon":45,"./util/fake_timers":57}],53:[function(require,module,exports){
 /**
   * @depend ../sinon.js
   * @depend call.js
@@ -7035,7 +7056,7 @@ if (typeof module !== "undefined" && module.exports && typeof require == "functi
     }
 }(typeof sinon == "object" && sinon || null));
 
-},{"../sinon":44}],53:[function(require,module,exports){
+},{"../sinon":45}],54:[function(require,module,exports){
 /**
  * @depend ../sinon.js
  * @depend spy.js
@@ -7198,7 +7219,7 @@ if (typeof module !== "undefined" && module.exports && typeof require == "functi
     }
 }(typeof sinon == "object" && sinon || null));
 
-},{"../sinon":44}],54:[function(require,module,exports){
+},{"../sinon":45}],55:[function(require,module,exports){
 /**
  * @depend ../sinon.js
  * @depend stub.js
@@ -7285,7 +7306,7 @@ if (typeof module !== "undefined" && module.exports && typeof require == "functi
     }
 }(typeof sinon == "object" && sinon || null));
 
-},{"../sinon":44}],55:[function(require,module,exports){
+},{"../sinon":45}],56:[function(require,module,exports){
 /**
  * @depend ../sinon.js
  * @depend test.js
@@ -7386,7 +7407,7 @@ if (typeof module !== "undefined" && module.exports && typeof require == "functi
     }
 }(typeof sinon == "object" && sinon || null));
 
-},{"../sinon":44}],56:[function(require,module,exports){
+},{"../sinon":45}],57:[function(require,module,exports){
 (function (global){
 /*jslint eqeqeq: false, plusplus: false, evil: true, onevar: false, browser: true, forin: false*/
 /*global module, require, window*/
@@ -7799,7 +7820,7 @@ if (typeof module !== 'undefined' && module.exports) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],57:[function(require,module,exports){
+},{}],58:[function(require,module,exports){
 (function (global){
 ((typeof define === "function" && define.amd && function (m) {
     define("formatio", ["samsam"], m);
@@ -8002,7 +8023,7 @@ if (typeof module !== 'undefined' && module.exports) {
 });
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"samsam":58}],58:[function(require,module,exports){
+},{"samsam":59}],59:[function(require,module,exports){
 ((typeof define === "function" && define.amd && function (m) { define("samsam", m); }) ||
  (typeof module === "object" &&
       function (m) { module.exports = m(); }) || // Node
@@ -8388,7 +8409,7 @@ if (typeof module !== 'undefined' && module.exports) {
     };
 });
 
-},{}],59:[function(require,module,exports){
+},{}],60:[function(require,module,exports){
 //     Underscore.js 1.6.0
 //     http://underscorejs.org
 //     (c) 2009-2014 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -9733,7 +9754,7 @@ if (typeof module !== 'undefined' && module.exports) {
   }
 }).call(this);
 
-},{}],60:[function(require,module,exports){
+},{}],61:[function(require,module,exports){
 'use strict';
 var aplus = require('promises-aplus-tests');
 var Promise = require('../lib');
@@ -10086,4 +10107,4 @@ describe('Lie', function () {
     aplus.mocha(adapter);
   });
 });
-},{"../lib":4,"../lib/INTERNAL":1,"assert":15,"promises-aplus-tests":27}]},{},[60]);
+},{"../lib":4,"../lib/INTERNAL":1,"assert":15,"promises-aplus-tests":27}]},{},[61]);
