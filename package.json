@@ -42,15 +42,15 @@
     ]
   },
   "devDependencies": {
-    "uglify-js": "^2.4.13",
-    "jshint": "^2.4.4",
-    "istanbul": "^0.2.6",
-    "promises-aplus-tests": "calvinmetcalf/promises-tests#phantom",
-    "mocha": "^1.18.0",
+    "browserify": "^8.0.3",
     "derequire": "^1.2.0",
-    "phantomjs": "^1.9.9",
+    "istanbul": "^0.2.6",
+    "jshint": "^2.4.4",
+    "mocha": "^1.18.0",
     "mocha-phantomjs": "^3.5.0",
-    "browserify": "^5.11.2"
+    "phantomjs": "^1.9.9",
+    "promises-aplus-tests": "calvinmetcalf/promises-tests#phantom",
+    "uglify-js": "^2.4.13"
   },
   "dependencies": {
     "immediate": "^3.0.0"
