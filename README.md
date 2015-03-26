@@ -27,7 +27,7 @@ Either use it with [browserify](http://browserify.org/) (recomended) or grab one
 
 ## API
 
-Impliments the standard ES6 api, 
+Implements the standard ES6 api, 
 
 ```js
 new Promise(function(resolve, reject){
