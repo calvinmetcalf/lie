@@ -19,15 +19,15 @@ var Promise = require('lie');
 
 ## Usage
 
-Either use it with [browserify](http://browserify.org/) (recomended) or grab one of the files from the dist folder
+Either use it with [browserify](http://browserify.org/) (recommended) or grab one of the files from the dist folder
 
 - lie.js/lie.min.js makes 'Promise' available in global scope (or since it's a UMD `Promise` will be availble through a CJS or AMD loader if it's available instead)
-- lie.noConflict.js/lie.noConflict.min.js makes 'Lie' availble in global scope, otherwise they the same as lie.js/lie.min.js
+- lie.noConflict.js/lie.noConflict.min.js makes 'Lie' available in global scope, otherwise they are the same as lie.js/lie.min.js
 - lie.polyfill.js/lie.polyfill.min.js adds 'Promise' to the global scope only if it's not already defined (not a UMD).
 
 ## API
 
-Impliments the standard ES6 api, 
+Impliments the standard ES6 API, 
 
 ```js
 new Promise(function(resolve, reject){
@@ -43,7 +43,7 @@ new Promise(function(resolve, reject){
 }, function (reason) {
     //on error
 }).catch(function (reason) {
-    //short cut for error handling
+    //shortcut for error handling
 });
 
 Promise.all([
@@ -53,5 +53,5 @@ Promise.all([
 Promise.race([
     //array of promises or values
 ]);
-// either resolve or rejects depending on the first value to do so
+// either resolves or rejects depending on the first value to do so
 ```
