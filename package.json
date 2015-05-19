@@ -53,6 +53,14 @@
     "uglify-js": "^2.4.13"
   },
   "dependencies": {
-    "immediate": "^3.0.0"
+    "immediate": "^3.0.0",
+    "inline-process-browser": "^1.0.0",
+    "unreachable-branch-transform": "^0.2.3"
+  },
+  "browserify": {
+    "transform": [
+      "inline-process-browser",
+      "unreachable-branch-transform"
+    ]
   }
 }
