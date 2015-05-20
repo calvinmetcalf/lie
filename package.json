@@ -42,7 +42,7 @@
     ]
   },
   "devDependencies": {
-    "browserify": "^8.0.3",
+    "browserify": "^10.2.1",
     "derequire": "^1.2.0",
     "istanbul": "^0.2.6",
     "jshint": "^2.4.4",
