@@ -346,6 +346,31 @@ describe('Lie', function () {
       );
     });
   });
+  if (!process.browser) {
+    it('should emit events for unhandled errors', function (done) {
+      var called = 0;
+      var err1 = new Error('should be caught');
+
+      var err2 = new Error('should be uncaught');
+      var promise1 = Promise.reject(err1);
+      var promise2 = Promise.reject(err2);
+      promise1.catch(function () {});
+      function onEvent(reason, promise) {
+        if (!called) {
+          called++;
+          assert.equal(err2, reason);
+          assert.equal(promise2, promise);
+          setTimeout(function (){
+            process.removeListener('unhandledRejection', onEvent);
+            done();
+          }, 100)
+        } else {
+          done(new Error('called more then once'));
+        }
+      }
+      process.on('unhandledRejection', onEvent);
+    });
+  }
   describe('Promises/A+ Tests', function () {
     aplus.mocha(adapter);
   });

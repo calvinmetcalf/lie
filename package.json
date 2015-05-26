@@ -34,7 +34,7 @@
     "browser": "browserify test/cover.js > test/browser.js && mocha-phantomjs test/test.html"
   },
   "devDependencies": {
-    "browserify": "^8.0.3",
+    "browserify": "^10.2.1",
     "derequire": "^1.2.0",
     "istanbul": "^0.2.6",
     "jshint": "^2.4.4",
@@ -45,6 +45,14 @@
     "uglify-js": "^2.4.13"
   },
   "dependencies": {
-    "immediate": "^3.0.0"
+    "immediate": "~3.0.0",
+    "inline-process-browser": "^1.0.0",
+    "unreachable-branch-transform": "^0.2.3"
+  },
+  "browserify": {
+    "transform": [
+      "inline-process-browser",
+      "unreachable-branch-transform"
+    ]
   }
 }
