@@ -1,6 +1,6 @@
 {
   "name": "lie",
-  "version": "2.8.1",
+  "version": "2.9.0",
   "description": "A basic but performant promise implementation",
   "license": "MIT",
   "repository": {
@@ -32,14 +32,6 @@
     "jshint": "jshint lib/*.js",
     "node": "mocha -R spec ./test/cover.js",
     "browser": "browserify test/cover.js > test/browser.js && mocha-phantomjs test/test.html"
-  },
-  "jam": {
-    "main": "dist/lie.js",
-    "include": [
-      "README.md",
-      "LICENSE.txt",
-      "dist/lie.js"
-    ]
   },
   "devDependencies": {
     "browserify": "^8.0.3",

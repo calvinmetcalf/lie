@@ -1,17 +1,30 @@
 {
   "name": "lie",
-  "version": "2.8.1",
+  "version": "2.9.0",
   "description": "A minimal and fast promise implementation",
   "repo": "calvinmetcalf/lie",
   "keywords": [],
   "development": {},
   "license": "MIT",
-  "main": "lib/lie.js",
+  "main": "lib/index.js",
   "scripts": [
-    "lib/lie.js"
+    "lib/all.js",
+    "lib/handlers.js",
+    "lib/index.js",
+    "lib/INTERNAL.js",
+    "lib/polyfill.js",
+    "lib/promise.js",
+    "lib/queueItem.js",
+    "lib/race.js",
+    "lib/reject.js",
+    "lib/resolve.js",
+    "lib/resolveThenable.js",
+    "lib/states.js",
+    "lib/tryCatch.js",
+    "lib/unwrap.js",
   ],
   "dependencies": {
-    "calvinmetcalf/immediate": "3.0.0"
+    "calvinmetcalf/immediate": "3.0.2"
   },
   "remotes": []
 }
