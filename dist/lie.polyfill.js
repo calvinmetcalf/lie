@@ -1,10 +1,17 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
+(function (global){
+'use strict';
+if (typeof global.Promise !== 'function') {
+  global.Promise = _dereq_('./index');
+}
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./index":5}],2:[function(_dereq_,module,exports){
 'use strict';
 
 module.exports = INTERNAL;
 
 function INTERNAL() {}
-},{}],2:[function(_dereq_,module,exports){
+},{}],3:[function(_dereq_,module,exports){
 'use strict';
 var Promise = _dereq_('./promise');
 var reject = _dereq_('./reject');
@@ -48,7 +55,7 @@ function all(iterable) {
     }
   }
 }
-},{"./INTERNAL":1,"./handlers":3,"./promise":6,"./reject":9,"./resolve":10}],3:[function(_dereq_,module,exports){
+},{"./INTERNAL":2,"./handlers":4,"./promise":6,"./reject":9,"./resolve":10}],4:[function(_dereq_,module,exports){
 'use strict';
 var tryCatch = _dereq_('./tryCatch');
 var resolveThenable = _dereq_('./resolveThenable');
@@ -94,21 +101,16 @@ function getThen(obj) {
     };
   }
 }
-},{"./resolveThenable":11,"./states":12,"./tryCatch":13}],4:[function(_dereq_,module,exports){
+
+},{"./resolveThenable":11,"./states":12,"./tryCatch":13}],5:[function(_dereq_,module,exports){
 module.exports = exports = _dereq_('./promise');
 
 exports.resolve = _dereq_('./resolve');
 exports.reject = _dereq_('./reject');
 exports.all = _dereq_('./all');
 exports.race = _dereq_('./race');
-},{"./all":2,"./promise":6,"./race":8,"./reject":9,"./resolve":10}],5:[function(_dereq_,module,exports){
-(function (global){
-'use strict';
-if (typeof global.Promise !== 'function') {
-  global.Promise = _dereq_('./index');
-}
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./index":4}],6:[function(_dereq_,module,exports){
+
+},{"./all":3,"./promise":6,"./race":8,"./reject":9,"./resolve":10}],6:[function(_dereq_,module,exports){
 'use strict';
 
 var unwrap = _dereq_('./unwrap');
@@ -142,10 +144,8 @@ Promise.prototype.then = function (onFulfilled, onRejected) {
     return this;
   }
   var promise = new Promise(INTERNAL);
-
-  
   if (this.state !== states.PENDING) {
-    var resolver = this.state === states.FULFILLED ? onFulfilled: onRejected;
+    var resolver = this.state === states.FULFILLED ? onFulfilled : onRejected;
     unwrap(promise, resolver, this.outcome);
   } else {
     this.queue.push(new QueueItem(promise, onFulfilled, onRejected));
@@ -154,7 +154,7 @@ Promise.prototype.then = function (onFulfilled, onRejected) {
   return promise;
 };
 
-},{"./INTERNAL":1,"./queueItem":7,"./resolveThenable":11,"./states":12,"./unwrap":14}],7:[function(_dereq_,module,exports){
+},{"./INTERNAL":2,"./queueItem":7,"./resolveThenable":11,"./states":12,"./unwrap":14}],7:[function(_dereq_,module,exports){
 'use strict';
 var handlers = _dereq_('./handlers');
 var unwrap = _dereq_('./unwrap');
@@ -183,7 +183,8 @@ QueueItem.prototype.callRejected = function (value) {
 QueueItem.prototype.otherCallRejected = function (value) {
   unwrap(this.promise, this.onRejected, value);
 };
-},{"./handlers":3,"./unwrap":14}],8:[function(_dereq_,module,exports){
+
+},{"./handlers":4,"./unwrap":14}],8:[function(_dereq_,module,exports){
 'use strict';
 var Promise = _dereq_('./promise');
 var reject = _dereq_('./reject');
@@ -202,10 +203,9 @@ function race(iterable) {
     return resolve([]);
   }
 
-  var resolved = 0;
   var i = -1;
   var promise = new Promise(INTERNAL);
-  
+
   while (++i < len) {
     resolver(iterable[i]);
   }
@@ -224,7 +224,8 @@ function race(iterable) {
     });
   }
 }
-},{"./INTERNAL":1,"./handlers":3,"./promise":6,"./reject":9,"./resolve":10}],9:[function(_dereq_,module,exports){
+
+},{"./INTERNAL":2,"./handlers":4,"./promise":6,"./reject":9,"./resolve":10}],9:[function(_dereq_,module,exports){
 'use strict';
 
 var Promise = _dereq_('./promise');
@@ -236,7 +237,7 @@ function reject(reason) {
 	var promise = new Promise(INTERNAL);
 	return handlers.reject(promise, reason);
 }
-},{"./INTERNAL":1,"./handlers":3,"./promise":6}],10:[function(_dereq_,module,exports){
+},{"./INTERNAL":2,"./handlers":4,"./promise":6}],10:[function(_dereq_,module,exports){
 'use strict';
 
 var Promise = _dereq_('./promise');
@@ -271,7 +272,7 @@ function resolve(value) {
       return EMPTYSTRING;
   }
 }
-},{"./INTERNAL":1,"./handlers":3,"./promise":6}],11:[function(_dereq_,module,exports){
+},{"./INTERNAL":2,"./handlers":4,"./promise":6}],11:[function(_dereq_,module,exports){
 'use strict';
 var handlers = _dereq_('./handlers');
 var tryCatch = _dereq_('./tryCatch');
@@ -304,12 +305,13 @@ function safelyResolveThenable(self, thenable) {
   }
 }
 exports.safely = safelyResolveThenable;
-},{"./handlers":3,"./tryCatch":13}],12:[function(_dereq_,module,exports){
+},{"./handlers":4,"./tryCatch":13}],12:[function(_dereq_,module,exports){
 // Lazy man's symbols for states
 
 exports.REJECTED = ['REJECTED'];
 exports.FULFILLED = ['FULFILLED'];
 exports.PENDING = ['PENDING'];
+
 },{}],13:[function(_dereq_,module,exports){
 'use strict';
 
@@ -348,7 +350,7 @@ function unwrap(promise, func, value) {
     }
   });
 }
-},{"./handlers":3,"immediate":16}],15:[function(_dereq_,module,exports){
+},{"./handlers":4,"immediate":16}],15:[function(_dereq_,module,exports){
 
 },{}],16:[function(_dereq_,module,exports){
 'use strict';
@@ -361,7 +363,8 @@ var types = [
 ];
 var draining;
 var queue = [];
-function drainQueue() {
+//named nextTick for less confusing stack traces
+function nextTick() {
   draining = true;
   var i, oldQueue;
   var len = queue.length;
@@ -381,7 +384,7 @@ var i = -1;
 var len = types.length;
 while (++ i < len) {
   if (types[i] && types[i].test && types[i].test()) {
-    scheduleDrain = types[i].install(drainQueue);
+    scheduleDrain = types[i].install(nextTick);
     break;
   }
 }
@@ -475,5 +478,5 @@ exports.install = function (t) {
     setTimeout(t, 0);
   };
 };
-},{}]},{},[5]);
+},{}]},{},[1]);
 
