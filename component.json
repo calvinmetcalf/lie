@@ -1,6 +1,6 @@
 {
   "name": "lie",
-  "version": "2.9.0",
+  "version": "2.9.1",
   "description": "A minimal and fast promise implementation",
   "repo": "calvinmetcalf/lie",
   "keywords": [],
@@ -24,7 +24,7 @@
     "lib/unwrap.js",
   ],
   "dependencies": {
-    "calvinmetcalf/immediate": "3.0.2"
+    "calvinmetcalf/immediate": "3.0.4"
   },
   "remotes": []
 }

@@ -55,3 +55,9 @@ Promise.race([
 ]);
 // either resolves or rejects depending on the first value to do so
 ```
+
+## Unhandled Rejections
+
+In node lie emits `unhandledRejection` events when promises are not handled in
+line with how [iojs does so](https://iojs.org/api/process.html#process_event_unhandledrejection)
+meaning it can act as promise shim in node as well as the browser.
