@@ -2,7 +2,6 @@
 var aplus = require('promises-aplus-tests');
 var Promise = require('../lib');
 var adapter = {};
-var INTERNAL = require('../lib/INTERNAL');
 var assert = require('assert');
 
 adapter.deferred = function () {
@@ -13,19 +12,11 @@ adapter.deferred = function () {
   });
   return pending;
 };
-adapter.resolved = Promise.resolve;
-adapter.rejected = Promise.reject;
+adapter.resolved = Promise.resolve.bind(Promise);
+adapter.rejected = Promise.reject.bind(Promise);
 //noop, just for coverage
-INTERNAL();
 
 describe('Lie', function () {
-  it('should work without new', function (done) {
-    Promise(function (resolve) {
-      resolve(true);
-    }).then(function () {
-      done();
-    });
-  });
   it('should work resolving a promise new', function (done) {
     new Promise(function (resolve) {
       resolve(new Promise(function (resolve) {

@@ -18,7 +18,7 @@
   ],
   "main": "lib/index.js",
   "scripts": {
-    "test": "jshint lib/*.js && mocha -R nyan ./test/cover.js",
+    "test": "mocha --compilers js:babel/register -R nyan ./test/cover.js",
     "build-js": "browserify -s Promise ./lib/index.js | derequire > ./dist/lie.js",
     "build-min": "uglifyjs ./dist/lie.js -mc > ./dist/lie.min.js",
     "build-nc-js": "browserify -s Lie ./lib/index.js | derequire > ./dist/lie.noConflict.js",
