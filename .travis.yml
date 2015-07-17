@@ -11,4 +11,3 @@ env:
   - COMMAND=node
   - COMMAND=browser
   - COMMAND=cover
-  - COMMAND=jshint
