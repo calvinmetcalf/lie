@@ -9,5 +9,4 @@ script: npm run $COMMAND
 env:
   matrix:
   - COMMAND=node
-  - COMMAND=browser
   - COMMAND=cover
