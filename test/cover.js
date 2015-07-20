@@ -20,13 +20,6 @@ adapter.rejected = function (reason) {
 }
 
 describe('Lie', function () {
-  it('should work without new', function (done) {
-    Promise(function (resolve) {
-      resolve(true);
-    }).then(function () {
-      done();
-    });
-  });
   it('should work resolving a promise new', function (done) {
     new Promise(function (resolve) {
       resolve(new Promise(function (resolve) {
