@@ -34,17 +34,18 @@
     "browser": "browserify test/cover.js > test/browser.js && mocha-phantomjs test/test.html"
   },
   "devDependencies": {
-    "browserify": "^10.2.1",
+    "browserify": "^11.0.0",
     "derequire": "^1.2.0",
     "istanbul": "^0.2.6",
     "jshint": "^2.4.4",
     "mocha": "^1.18.0",
-    "mocha-phantomjs": "^3.5.0",
+    "mocha-phantomjs": "~3.5.0",
     "phantomjs": "^1.9.9",
     "promises-aplus-tests": "calvinmetcalf/promises-tests#phantom",
     "uglify-js": "^2.4.13"
   },
   "dependencies": {
+    "es3ify": "^0.1.3",
     "immediate": "~3.0.0",
     "inline-process-browser": "^1.0.0",
     "unreachable-branch-transform": "^0.2.3"
@@ -52,7 +53,8 @@
   "browserify": {
     "transform": [
       "inline-process-browser",
-      "unreachable-branch-transform"
+      "unreachable-branch-transform",
+      "es3ify"
     ]
   }
 }

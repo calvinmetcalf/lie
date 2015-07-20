@@ -12,6 +12,7 @@
   "indent": 2,
   "trailing": true,
   "quotmark": "single",
+  "validthis": true,
   "globals": {
     "describe": true,
     "it": true
