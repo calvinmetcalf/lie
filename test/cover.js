@@ -1,6 +1,6 @@
 'use strict';
 var aplus = require('promises-aplus-tests');
-var Promise = require('../lib');
+var Promise = require('../lib/compiled');
 var adapter = {};
 var assert = require('assert');
 
@@ -12,11 +12,25 @@ adapter.deferred = function () {
   });
   return pending;
 };
-adapter.resolved = Promise.resolve.bind(Promise);
-adapter.rejected = Promise.reject.bind(Promise);
-//noop, just for coverage
+adapter.resolved = function (value) {
+  return Promise.resolve(value);
+}
+adapter.rejected = function (reason) {
+  return Promise.reject(reason);
+}
 
 describe('Lie', function () {
+  it('should throw without new', function (done) {
+    var threw = false;
+    try {
+      Promise(function () {})
+    } catch(e) {
+      threw = true;
+    } finally {
+      assert(threw);
+      done();
+    }
+  });
   it('should work resolving a promise new', function (done) {
     new Promise(function (resolve) {
       resolve(new Promise(function (resolve) {
