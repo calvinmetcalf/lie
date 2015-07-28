@@ -23,8 +23,7 @@ require('lie/polyfill');
 
 Either use it with [browserify](http://browserify.org/) (recommended) or grab one of the files from the dist folder
 
-- lie.js/lie.min.js makes 'Promise' available in global scope (or since it's a UMD `Promise` will be availble through a CJS or AMD loader if it's available instead)
-- lie.noConflict.js/lie.noConflict.min.js makes 'Lie' available in global scope, otherwise they are the same as lie.js/lie.min.js
+- lie.js/lie.min.js makes 'Promise' available in global scope (or since it's a UMD `Promise` will be available through a CJS or AMD loader if it's available instead)
 - lie.polyfill.js/lie.polyfill.min.js adds 'Promise' to the global scope only if it's not already defined (not a UMD).
 
 ## API
