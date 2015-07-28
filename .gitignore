@@ -5,3 +5,4 @@ components
 coverage
 docs
 .DS_Store
+test/browser.js
