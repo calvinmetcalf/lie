@@ -15,6 +15,8 @@ npm install lie
 
 ```javascript
 var Promise = require('lie');
+// or use the pollyfill
+require('lie/polyfill');
 ```
 
 ## Usage

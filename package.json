@@ -24,7 +24,7 @@
     "build-nc-js": "browserify -s Lie ./lib/index.js | derequire > ./dist/lie.noConflict.js",
     "build-nc-min": "uglifyjs ./dist/lie.noConflict.js -mc > ./dist/lie.noConflict.min.js",
     "build-nc": "npm run build-nc-js && npm run build-nc-min",
-    "build-poly-js": "browserify ./lib/polyfill.js | derequire > ./dist/lie.polyfill.js",
+    "build-poly-js": "browserify ./polyfill.js | derequire > ./dist/lie.polyfill.js",
     "build-poly-min": "uglifyjs ./dist/lie.polyfill.js -mc > ./dist/lie.polyfill.min.js",
     "build-poly": "npm run build-poly-js && npm run build-poly-min",
     "build": "npm run build-js && npm run build-min && npm run build-nc && npm run build-poly",
