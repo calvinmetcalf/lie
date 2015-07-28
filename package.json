@@ -18,7 +18,7 @@
   ],
   "main": "lib/index.js",
   "scripts": {
-    "test": "jshint lib/*.js && mocha -R nyan ./test/cover.js",
+    "test": "npm run compile && mocha -R nyan ./test/cover.js",
     "build-js": "browserify -s Promise ./lib/index.js | derequire > ./dist/lie.js",
     "build-min": "uglifyjs ./dist/lie.js -mc > ./dist/lie.min.js",
     "build-nc-js": "browserify -s Lie ./lib/index.js | derequire > ./dist/lie.noConflict.js",
@@ -28,23 +28,25 @@
     "build-poly-min": "uglifyjs ./dist/lie.polyfill.js -mc > ./dist/lie.polyfill.min.js",
     "build-poly": "npm run build-poly-js && npm run build-poly-min",
     "build": "npm run build-js && npm run build-min && npm run build-nc && npm run build-poly",
-    "cover": "istanbul cover _mocha ./test/cover.js -- -R spec && istanbul check-coverage --lines 100 --function 100 --statements 100 --branches 100",
-    "jshint": "jshint lib/*.js",
-    "node": "mocha -R spec ./test/cover.js",
-    "browser": "browserify test/cover.js > test/browser.js && mocha-phantomjs test/test.html"
+    "cover": "npm run compile && istanbul cover _mocha ./test/cover.js -- -R spec && istanbul check-coverage --lines 100 --function 100 --statements 100 --branches -2",
+    "node": "npm run compile && mocha -R spec ./test/cover.js",
+    "browser": "browserify -t babelify -r babelify/polyfill > test/browser.js && mocha-phantomjs test/test.html",
+    "compile": "babel -b es6.forOf ./lib/index.js > ./lib/compiled.js"
   },
   "devDependencies": {
+    "babel": "^5.6.23",
     "browserify": "^10.2.1",
     "derequire": "^1.2.0",
     "istanbul": "^0.2.6",
     "jshint": "^2.4.4",
     "mocha": "^1.18.0",
-    "mocha-phantomjs": "^3.5.0",
+    "mocha-phantomjs": "~3.5.0",
     "phantomjs": "^1.9.9",
     "promises-aplus-tests": "calvinmetcalf/promises-tests#phantom",
     "uglify-js": "^2.4.13"
   },
   "dependencies": {
+    "babelify": "^6.1.3",
     "immediate": "~3.0.0",
     "inline-process-browser": "^1.0.0",
     "unreachable-branch-transform": "^0.2.3"
@@ -52,7 +54,8 @@
   "browserify": {
     "transform": [
       "inline-process-browser",
-      "unreachable-branch-transform"
+      "unreachable-branch-transform",
+      "babelify"
     ]
   }
 }
