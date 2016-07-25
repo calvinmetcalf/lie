@@ -18,40 +18,46 @@
   ],
   "main": "lib/index.js",
   "scripts": {
-    "test": "jshint lib/*.js && mocha -R nyan ./test/cover.js",
-    "build-js": "browserify -s Promise ./lib/index.js | derequire > ./dist/lie.js",
+    "test": "npm run jshint && mocha -R nyan ./test/cover.js",
+    "prepublish": "npm run build",
+    "build-node": "ncp src/index.js lib/index.js && browserify-transform-cli inline-process-browser unreachable-branch-transform es3ify < src/index.js > lib/browser.js",
+    "build-js": "browserify -s Promise -p bundle-collapser/plugin . | derequire > ./dist/lie.js",
     "build-min": "uglifyjs ./dist/lie.js -mc > ./dist/lie.min.js",
-    "build-poly-js": "browserify ./polyfill.js | derequire > ./dist/lie.polyfill.js",
+    "build-poly-js": "browserify -p bundle-collapser/plugin ./polyfill.js | derequire > ./dist/lie.polyfill.js",
     "build-poly-min": "uglifyjs ./dist/lie.polyfill.js -mc > ./dist/lie.polyfill.min.js",
     "build-poly": "npm run build-poly-js && npm run build-poly-min",
-    "build": "npm run build-js && npm run build-min && npm run build-poly",
+    "build": "npm run build-node && npm run build-js && npm run build-min && npm run build-poly",
     "cover": "istanbul cover _mocha ./test/cover.js -- -R spec && istanbul check-coverage --lines 100 --function 100 --statements 100 --branches 100",
-    "jshint": "jshint lib/*.js",
+    "jshint": "jshint src",
     "node": "mocha -R spec ./test/cover.js",
     "browser": "browserify test/cover.js > test/browser.js && mocha-phantomjs test/test.html"
   },
   "devDependencies": {
     "browserify": "^11.0.0",
+    "browserify-transform-cli": "^1.1.1",
+    "bundle-collapser": "^1.2.1",
     "derequire": "^1.2.0",
+    "es3ify": "^0.2.2",
+    "inline-process-browser": "^1.0.0",
     "istanbul": "^0.2.6",
     "jshint": "^2.4.4",
     "mocha": "^1.18.0",
     "mocha-phantomjs": "~3.5.0",
+    "ncp": "^2.0.0",
     "phantomjs": "^1.9.9",
     "promises-aplus-tests": "calvinmetcalf/promises-tests#phantom",
-    "uglify-js": "^2.4.13"
-  },
-  "dependencies": {
-    "es3ify": "^0.2.2",
-    "immediate": "~3.0.5",
-    "inline-process-browser": "^1.0.0",
+    "uglify-js": "^2.4.13",
     "unreachable-branch-transform": "^0.3.0"
   },
-  "browserify": {
-    "transform": [
-      "inline-process-browser",
-      "unreachable-branch-transform",
-      "es3ify"
-    ]
-  }
+  "dependencies": {
+    "immediate": "~3.0.5"
+  },
+  "browser": {
+    "./lib/index.js": "./lib/browser.js"
+  },
+  "files": [
+    "lib",
+    "dist",
+    "polyfill.js"
+  ]
 }
