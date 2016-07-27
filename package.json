@@ -18,6 +18,7 @@
   ],
   "main": "lib/index.js",
   "scripts": {
+    "pretest": "npm run build",
     "test": "npm run jshint && mocha -R nyan ./test/cover.js",
     "build-node": "copyfiles -f src/index.js lib && browserify-transform-cli inline-process-browser unreachable-branch-transform es3ify < src/index.js > lib/browser.js",
     "build-js": "browserify -s Promise -p bundle-collapser/plugin . | derequire > ./dist/lie.js",
