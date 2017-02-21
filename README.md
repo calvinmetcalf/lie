@@ -4,9 +4,9 @@
        alt="Promises/A+ logo" title="Promises/A+ 1.1 compliant" align="right" />
 </a> [![Build Status](https://travis-ci.org/calvinmetcalf/lie.svg)](https://travis-ci.org/calvinmetcalf/lie)
 
-lie a small, performant, promise library implementing the [Promises/A+ spec Version 1.1](http://promises-aplus.github.com/promises-spec/).
+lie is a small, performant promise library implementing the [Promises/A+ spec](http://promises-aplus.github.com/promises-spec/) (Version 1.1).
 
-A originally a fork of [Ruben Verborgh's](https://github.com/RubenVerborgh) library called [promiscuous](https://github.com/RubenVerborgh/promiscuous), version 2.6 and above are forked from [ayepromise](https://github.com/cburgmer/ayepromise) by [Chris Burgmer](https://github.com/cburgmer).
+Originally a fork of [Ruben Verborgh](https://github.com/RubenVerborgh)'s [promiscuous](https://github.com/RubenVerborgh/promiscuous), with version 2.6 it became a fork of [ayepromise](https://github.com/cburgmer/ayepromise) by [Chris Burgmer](https://github.com/cburgmer).
 
 ```bash
 npm install lie
@@ -21,14 +21,14 @@ require('lie/polyfill');
 
 ## Usage
 
-Either use it with [browserify](http://browserify.org/) (recommended) or grab one of the files from the dist folder
+Either use it with [browserify](http://browserify.org/) (recommended) or grab one of the files from the dist folder:
 
-- lie.js/lie.min.js makes 'Promise' available in global scope (or since it's a UMD `Promise` will be available through a CJS or AMD loader if it's available instead)
+- lie.js/lie.min.js exposes 'Promise' either as a UMD module or from the global scope, depending on if a CJS or AMD loader is available.
 - lie.polyfill.js/lie.polyfill.min.js adds 'Promise' to the global scope only if it's not already defined (not a UMD).
 
 ## API
 
-Implements the standard ES6 api,
+Implements the standard ES6 api:
 
 ```js
 new Promise(function(resolve, reject){
@@ -59,6 +59,4 @@ Promise.race([
 
 ## Unhandled Rejections
 
-In node lie emits `unhandledRejection` events when promises are not handled in
-line with how [iojs does so](https://iojs.org/api/process.html#process_event_unhandledrejection)
-meaning it can act as promise shim in node as well as the browser.
+In Node.js, lie emits an `unhandledRejection` event when a rejected promise isn't caught, in line with [how io.js does it](https://iojs.org/api/process.html#process_event_unhandledrejection). This allows it to act as a promise shim in both Node.js and the browser.
