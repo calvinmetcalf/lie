@@ -1,8 +1,7 @@
 # lie
-<a href="http://promises-aplus.github.com/promises-spec">
-  <img src="http://promises-aplus.github.com/promises-spec/assets/logo-small.png"
-       alt="Promises/A+ logo" title="Promises/A+ 1.1 compliant" align="right" />
-</a> [![Build Status](https://travis-ci.org/calvinmetcalf/lie.svg)](https://travis-ci.org/calvinmetcalf/lie)
+
+[<img src="https://promisesaplus.com/assets/logo-small.png" alt="Promises/A+ logo" title="Promises/A+ 1.1 compliant" align="right" />](https://promisesaplus.com)
+[<img src="https://travis-ci.org/calvinmetcalf/lie.svg" alt="Build status" title="Build status" align="right" />](https://travis-ci.org/calvinmetcalf/lie)
 
 lie is a small, performant promise library implementing the [Promises/A+ spec](http://promises-aplus.github.com/promises-spec/) (Version 1.1).
 
