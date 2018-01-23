@@ -33,6 +33,23 @@ function Promise(resolver) {
   }
 }
 
+Promise.prototype.finally = function (callback) {
+  var p = this.constructor;
+  return this.then(resolve, reject);
+
+  function resolve(value) {
+    function yes () {
+      return value;
+    }
+    return p.resolve(callback()).then(yes, yes);
+  }
+  function reject(reason) {
+    function no () {
+      throw reason;
+    }
+    return p.resolve(callback()).then(no, no);
+  }
+};
 Promise.prototype.catch = function (onRejected) {
   return this.then(null, onRejected);
 };
