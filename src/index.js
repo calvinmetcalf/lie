@@ -34,6 +34,9 @@ function Promise(resolver) {
 }
 
 Promise.prototype.finally = function (callback) {
+  if (typeof callback !== 'function') {
+    return this;
+  }
   var p = this.constructor;
   return this.then(resolve, reject);
 
@@ -41,13 +44,13 @@ Promise.prototype.finally = function (callback) {
     function yes () {
       return value;
     }
-    return p.resolve(callback()).then(yes, yes);
+    return p.resolve(callback()).then(yes);
   }
   function reject(reason) {
     function no () {
       throw reason;
     }
-    return p.resolve(callback()).then(no, no);
+    return p.resolve(callback()).then(no);
   }
 };
 Promise.prototype.catch = function (onRejected) {
