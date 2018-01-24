@@ -372,25 +372,27 @@ describe('Lie', function () {
 var P = Promise;
 var someRejectionReason = { message: 'some rejection reason' };
 var anotherReason = { message: 'another rejection reason' };
-describe('mocha promise sanity check', () => {
-	it('passes with a resolved promise', () => {
+describe('mocha promise sanity check', function () {
+	it('passes with a resolved promise', function () {
 		return P.resolve(3);
 	});
 
-	it('passes with a rejected then resolved promise', () => {
-		return P.reject(someRejectionReason).catch(x => 'this should be resolved');
+	it('passes with a rejected then resolved promise', function () {
+		return P.reject(someRejectionReason).catch(function (x) {
+      return 'this should be resolved';
+    });
 	});
 
     var ifPromiseIt = P === Promise ? it : it.skip;
-	ifPromiseIt('is the native Promise', () => {
+	ifPromiseIt('is the native Promise', function () {
 		assert.equal(P, Promise);
 	});
 });
-describe('onFinally', () => {
-	describe('no callback', () => {
-		specify('from resolved', () => {
+describe('onFinally', function () {
+	describe('no callback', function () {
+		specify('from resolved', function () {
 			return adapter.resolved(3)
-				.then((x) => {
+				.then(function (x) {
 					assert.strictEqual(x, 3);
 					return x;
 				})
@@ -402,9 +404,9 @@ describe('onFinally', () => {
 				});
 		});
 
-		specify('from rejected', () => {
+		specify('from rejected', function () {
 			return adapter.rejected(someRejectionReason)
-				.catch((e) => {
+				.catch(function (e) {
 					assert.strictEqual(e, someRejectionReason);
 					throw e;
 				})
@@ -417,10 +419,10 @@ describe('onFinally', () => {
 		});
 	});
 
-	describe('throws an exception', () => {
-		specify('from resolved', () => {
+	describe('throws an exception', function () {
+		specify('from resolved', function () {
 			return adapter.resolved(3)
-				.then((x) => {
+				.then(function (x) {
 					assert.strictEqual(x, 3);
 					return x;
 				})
@@ -434,7 +436,7 @@ describe('onFinally', () => {
 				});
 		});
 
-		specify('from rejected', () => {
+		specify('from rejected', function () {
 			return adapter.rejected(anotherReason).finally(function onFinally() {
 				assert(arguments.length === 0);
 				throw someRejectionReason;
@@ -446,10 +448,10 @@ describe('onFinally', () => {
 		});
 	});
 
-	describe('returns a non-promise', () => {
-		specify('from resolved', () => {
+	describe('returns a non-promise', function () {
+		specify('from resolved', function () {
 			return adapter.resolved(3)
-				.then((x) => {
+				.then(function (x) {
 					assert.strictEqual(x, 3);
 					return x;
 				})
@@ -463,9 +465,9 @@ describe('onFinally', () => {
 				});
 		});
 
-		specify('from rejected', () => {
+		specify('from rejected', function () {
 			return adapter.rejected(anotherReason)
-				.catch((e) => {
+				.catch(function (e) {
 					assert.strictEqual(e, anotherReason);
 					throw e;
 				})
@@ -480,17 +482,17 @@ describe('onFinally', () => {
 		});
 	});
 
-	describe('returns a pending-forever promise', () => {
-		specify('from resolved', (done) => {
+	describe('returns a pending-forever promise', function () {
+		specify('from resolved', function (done) {
 			adapter.resolved(3)
-				.then((x) => {
+				.then(function (x) {
 					assert.strictEqual(x, 3);
 					return x;
 				})
 				.finally(function onFinally() {
 					assert(arguments.length === 0);
 					setTimeout(done, 0.1e3);
-					return new P(() => {}); // forever pending
+					return new P(function () {}); // forever pending
 				}).then(function onFulfilled(x) {
 					throw new Error('should not be called');
 				}, function onRejected() {
@@ -498,16 +500,16 @@ describe('onFinally', () => {
 				});
 		});
 
-		specify('from rejected', (done) => {
+		specify('from rejected', function (done) {
 			adapter.rejected(someRejectionReason)
-				.catch((e) => {
+				.catch(function (e) {
 					assert.strictEqual(e, someRejectionReason);
 					throw e;
 				})
 				.finally(function onFinally() {
 					assert(arguments.length === 0);
 					setTimeout(done, 0.1e3);
-					return new P(() => {}); // forever pending
+					return new P(function () {}); // forever pending
 				}).then(function onFulfilled(x) {
 					throw new Error('should not be called');
 				}, function onRejected() {
@@ -516,10 +518,10 @@ describe('onFinally', () => {
 		});
 	});
 
-	describe('returns an immediately-fulfilled promise', () => {
-		specify('from resolved', () => {
+	describe('returns an immediately-fulfilled promise', function () {
+		specify('from resolved', function () {
 			return adapter.resolved(3)
-				.then((x) => {
+				.then(function (x) {
 					assert.strictEqual(x, 3);
 					return x;
 				})
@@ -533,9 +535,9 @@ describe('onFinally', () => {
 				});
 		});
 
-		specify('from rejected', () => {
+		specify('from rejected', function () {
 			return adapter.rejected(someRejectionReason)
-				.catch((e) => {
+				.catch(function (e) {
 					assert.strictEqual(e, someRejectionReason);
 					throw e;
 				})
@@ -550,10 +552,10 @@ describe('onFinally', () => {
 		});
 	});
 
-	describe('returns an immediately-rejected promise', () => {
-		specify('from resolved ', () => {
+	describe('returns an immediately-rejected promise', function () {
+		specify('from resolved ', function () {
 			return adapter.resolved(3)
-				.then((x) => {
+				.then(function (x) {
 					assert.strictEqual(x, 3);
 					return x;
 				})
@@ -567,10 +569,10 @@ describe('onFinally', () => {
 				});
 		});
 
-		specify('from rejected', () => {
-			const newReason = {};
+		specify('from rejected', function () {
+			var newReason = {};
 			return adapter.rejected(someRejectionReason)
-				.catch((e) => {
+				.catch(function (e) {
 					assert.strictEqual(e, someRejectionReason);
 					throw e;
 				})
@@ -585,18 +587,18 @@ describe('onFinally', () => {
 		});
 	});
 
-	describe('returns a fulfilled-after-a-second promise', () => {
-		specify('from resolved', (done) => {
+	describe('returns a fulfilled-after-a-second promise', function () {
+		specify('from resolved', function (done) {
 			adapter.resolved(3)
-				.then((x) => {
+				.then(function (x) {
 					assert.strictEqual(x, 3);
 					return x;
 				})
 				.finally(function onFinally() {
 					assert(arguments.length === 0);
 					setTimeout(done, 1.5e3);
-					return new P((resolve) => {
-						setTimeout(() => resolve(4), 1e3);
+					return new P(function (resolve) {
+						setTimeout(function () {resolve(4)}, 1e3);
 					});
 				}).then(function onFulfilled(x) {
 					assert.strictEqual(x, 3);
@@ -605,17 +607,17 @@ describe('onFinally', () => {
 				});
 		});
 
-		specify('from rejected', (done) => {
+		specify('from rejected', function (done) {
 			adapter.rejected(3)
-				.catch((e) => {
+				.catch(function (e) {
 					assert.strictEqual(e, 3);
 					throw e;
 				})
 				.finally(function onFinally() {
 					assert(arguments.length === 0);
 					setTimeout(done, 1.5e3);
-					return new P((resolve) => {
-						setTimeout(() => resolve(4), 1e3);
+					return new P(function (resolve) {
+						setTimeout(function () {resolve(4)}, 1e3);
 					});
 				}).then(function onFulfilled() {
 					throw new Error('should not be called');
@@ -625,18 +627,18 @@ describe('onFinally', () => {
 		});
 	});
 
-	describe('returns a rejected-after-a-second promise', () => {
-		specify('from resolved', (done) => {
+	describe('returns a rejected-after-a-second promise', function () {
+		specify('from resolved', function (done) {
 			adapter.resolved(3)
-				.then((x) => {
+				.then(function (x) {
 					assert.strictEqual(x, 3);
 					return x;
 				})
 				.finally(function onFinally() {
 					assert(arguments.length === 0);
 					setTimeout(done, 1.5e3);
-					return new P((resolve, reject) => {
-						setTimeout(() => reject(4), 1e3);
+					return new P(function (resolve, reject) {
+						setTimeout(function (){ reject(4)}, 1e3);
 					});
 				}).then(function onFulfilled(x) {
 					assert.strictEqual(x, 3);
@@ -645,17 +647,17 @@ describe('onFinally', () => {
 				});
 		});
 
-		specify('from rejected', (done) => {
+		specify('from rejected', function (done) {
 			adapter.rejected(someRejectionReason)
-				.catch((e) => {
+				.catch(function (e) {
 					assert.strictEqual(e, someRejectionReason);
 					throw e;
 				})
 				.finally(function onFinally() {
 					assert(arguments.length === 0);
 					setTimeout(done, 1.5e3);
-					return new P((resolve, reject) => {
-						setTimeout(() => reject(anotherReason), 1e3);
+					return new P(function (resolve, reject) {
+						setTimeout(function (){ reject(anotherReason)}, 1e3);
 					});
 				}).then(function onFulfilled() {
 					throw new Error('should not be called');
