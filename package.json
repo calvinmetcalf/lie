@@ -19,7 +19,7 @@
   "main": "lib/index.js",
   "scripts": {
     "pretest": "npm run build",
-    "test": "npm run jshint && mocha -R nyan ./test/cover.js",
+    "test": "npm run jshint && mocha -R nyan ./test/cover.js && tsc --noEmit ./test/types.ts",
     "build-node": "copyfiles -f src/index.js lib && browserify-transform-cli inline-process-browser unreachable-branch-transform es3ify < src/index.js > lib/browser.js",
     "build-js": "browserify -s Promise -p bundle-collapser/plugin . | derequire > ./dist/lie.js",
     "build-min": "uglifyjs ./dist/lie.js -mc > ./dist/lie.min.js",
@@ -49,6 +49,7 @@
     "phantomjs": "^1.9.9",
     "promises-aplus-tests": "calvinmetcalf/promises-tests#phantom",
     "rimraf": "^2.5.4",
+    "typescript": "^2.7.1",
     "uglify-js": "^2.4.13",
     "unreachable-branch-transform": "^0.3.0"
   },
@@ -61,6 +62,8 @@
   "files": [
     "lib",
     "dist",
-    "polyfill.js"
-  ]
+    "polyfill.js",
+    "lie.d.ts"
+  ],
+  "types": "lie.d.ts"
 }
