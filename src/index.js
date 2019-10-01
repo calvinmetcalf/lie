@@ -296,3 +296,50 @@ function race(iterable) {
     });
   }
 }
+
+function SettledSuccess (value) {
+  this.status = 'fulfilled';
+  this.value = value;
+}
+function SettledError (reason) {
+  this.status = 'rejected';
+  this.reason = reason;
+}
+
+Promise.allSettled = allSettled;
+function allSettled(iterable) {
+  var self = this;
+  if (Object.prototype.toString.call(iterable) !== '[object Array]') {
+    return this.reject(new TypeError('must be an array'));
+  }
+
+  var len = iterable.length;
+  if (!len) {
+    return this.resolve([]);
+  }
+
+  var values = new Array(len);
+  var resolved = 0;
+  var i = -1;
+  var promise = new this(INTERNAL);
+
+  while (++i < len) {
+    allResolver(iterable[i], i);
+  }
+  return promise;
+  function allResolver(value, i) {
+    self.resolve(value).then(resolveFromSuccess, resolveFromError);
+    function resolveFromSuccess(outValue) {
+      values[i] = new SettledSuccess(outValue);
+      if (++resolved === len) {
+        handlers.resolve(promise, values);
+      }
+    }
+    function resolveFromError(outValue) {
+      values[i] = new SettledError(outValue);
+      if (++resolved === len) {
+        handlers.resolve(promise, values);
+      }
+    }
+  }
+}
