@@ -349,20 +349,38 @@ describe('Lie', function () {
       var promise1 = Promise.reject(err1);
       var promise2 = Promise.reject(err2);
       promise1.catch(function () {});
-      function onEvent(reason, promise) {
-        if (!called) {
-          called++;
-          assert.equal(err2, reason);
-          assert.equal(promise2, promise);
-          setTimeout(function (){
-            process.removeListener('unhandledRejection', onEvent);
-            done();
-          }, 100)
-        } else {
-          done(new Error('called more then once'));
+      if (!process.browser) {
+        function onEvent(reason, promise) {
+          if (!called) {
+            called++;
+            assert.equal(err2, reason);
+            assert.equal(promise2, promise);
+            setTimeout(function (){
+              process.removeListener('unhandledRejection', onEvent);
+              done();
+            }, 100)
+          } else {
+            done(new Error('called more then once'));
+          }
         }
+        process.on('unhandledRejection', onEvent);
       }
-      process.on('unhandledRejection', onEvent);
+      if (process.browser) {
+        function onEvent(event) {
+          if (!called) {
+            called++;
+            assert.equal(err2, event.reason);
+            assert.equal(promise2, event.promise);
+            setTimeout(function (){
+              window.removeEventListener('unhandledrejection', onEvent);
+              done();
+            }, 100)
+          } else {
+            done(new Error('called more then once'));
+          }
+        }
+        window.addEventListener('unhandledrejection', onEvent);
+      }
     });
   }
   describe('Promises/A+ Tests', function () {
