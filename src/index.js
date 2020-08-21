@@ -9,11 +9,7 @@ var handlers = {};
 var REJECTED = ['REJECTED'];
 var FULFILLED = ['FULFILLED'];
 var PENDING = ['PENDING'];
-/* istanbul ignore else */
-if (!process.browser) {
-  // in which we actually take advantage of JS scoping
-  var UNHANDLED = ['UNHANDLED'];
-}
+var UNHANDLED = ['UNHANDLED'];
 
 module.exports = Promise;
 
@@ -24,10 +20,7 @@ function Promise(resolver) {
   this.state = PENDING;
   this.queue = [];
   this.outcome = void 0;
-  /* istanbul ignore else */
-  if (!process.browser) {
-    this.handled = UNHANDLED;
-  }
+  this.handled = UNHANDLED;
   if (resolver !== INTERNAL) {
     safelyResolveThenable(this, resolver);
   }
@@ -62,11 +55,8 @@ Promise.prototype.then = function (onFulfilled, onRejected) {
     return this;
   }
   var promise = new this.constructor(INTERNAL);
-  /* istanbul ignore else */
-  if (!process.browser) {
-    if (this.handled === UNHANDLED) {
-      this.handled = null;
-    }
+  if (this.handled === UNHANDLED) {
+    this.handled = null;
   }
   if (this.state !== PENDING) {
     var resolver = this.state === FULFILLED ? onFulfilled : onRejected;
@@ -140,15 +130,36 @@ handlers.resolve = function (self, value) {
 handlers.reject = function (self, error) {
   self.state = REJECTED;
   self.outcome = error;
-  /* istanbul ignore else */
-  if (!process.browser) {
-    if (self.handled === UNHANDLED) {
-      immediate(function () {
-        if (self.handled === UNHANDLED) {
+  if (self.handled === UNHANDLED) {
+    immediate(function () {
+      if (self.handled === UNHANDLED) {
+        /* istanbul ignore else */
+        if (!process.browser) {
           process.emit('unhandledRejection', error, self);
         }
-      });
-    }
+        /* istanbul ignore else */
+        if (process.browser) {
+          /* globals window, document */
+          var event;
+          if (!!(document && document.createEvent && window.dispatchEvent)) {
+            event = document.createEvent('Event');
+            event.promise = self;
+            event.reason = error;
+            event.initEvent('unhandledrejection', false, true);
+            window.dispatchEvent(event);
+          } else {
+            event = {
+              promise: self,
+              reason: error
+            };
+          }
+          var handler = window.onunhandledrejection;
+          if (typeof handler === 'function') {
+            handler(event);
+          }
+        }
+      }
+    });
   }
   var i = -1;
   var len = self.queue.length;
