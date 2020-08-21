@@ -31,7 +31,7 @@
     "cover": "istanbul cover _mocha ./test/cover.js -- -R spec && istanbul check-coverage --lines 100 --function 100 --statements 100 --branches 100",
     "jshint": "jshint src",
     "node": "mocha -R spec ./test/cover.js",
-    "browser": "browserify test/cover.js > test/browser.js && mocha-phantomjs test/test.html"
+    "browser": "browserify test/cover.js > test/browser.js && mocha-chrome test/test.html"
   },
   "devDependencies": {
     "browserify": "^13.0.0",
@@ -44,8 +44,8 @@
     "istanbul": "^0.2.6",
     "jshint": "^2.4.4",
     "mkdirp": "^0.5.1",
-    "mocha": "^1.18.0",
-    "mocha-phantomjs": "~3.5.0",
+    "mocha": "^2.5.3",
+    "mocha-chrome": "^2.2.0",
     "phantomjs": "^1.9.9",
     "promises-aplus-tests": "calvinmetcalf/promises-tests#phantom",
     "rimraf": "^2.5.4",
